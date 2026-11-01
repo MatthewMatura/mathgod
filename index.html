@@ -108,6 +108,9 @@
   }
   .grp.mix { grid-column: 1 / -1; font-size: 18px; }
   .grp[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+  .grp.move { width: 100%; font-size: 18px; }
+  .speed { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 20px; }
+  .speed input { flex: 1; min-width: 0; accent-color: var(--accent); height: 28px; }
   .toggle { display: flex; align-items: center; gap: 8px; font-size: 17px; color: var(--muted); cursor: pointer; }
   .toggle input { width: 20px; height: 20px; accent-color: var(--accent); }
 
@@ -138,6 +141,8 @@
     .grp { height: 42px; font-size: 18px; }
     .grp.mix { font-size: 15px; }
     .toggle { font-size: 14px; }
+    .grp.move { font-size: 15px; }
+    .speed { font-size: 15px; gap: 2px; }
     .status { font-size: 17px; padding: 10px 8px; }
   }
 </style>
@@ -160,6 +165,15 @@
   <section>
     <h2>Make groups of</h2>
     <div class="groups" id="groups" role="group" aria-label="Arrange"></div>
+  </section>
+  <section>
+    <h2>Move</h2>
+    <button class="grp move" id="move" aria-pressed="false">▶ Move</button>
+    <div class="speed">
+      <span aria-hidden="true">🐢</span>
+      <input type="range" id="speed" min="1" max="10" value="4" aria-label="Speed">
+      <span aria-hidden="true">🐇</span>
+    </div>
   </section>
   <label class="toggle"><input type="checkbox" id="speak"> Count out loud</label>
 </aside>

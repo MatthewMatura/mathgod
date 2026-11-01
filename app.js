@@ -38,6 +38,7 @@ let S = 46, S0 = 46;       // item size now / before the current slide
 let moveStart = -1e9, framesStart = -1e9, lastBorn = -1e9;
 let tapped = 0;
 let raf = 0;
+let moving = false, lastTick = 0;
 
 /* ---------------- Sidebar controls ---------------- */
 for (const it of ITEMS) {
@@ -69,7 +70,7 @@ for (const it of ITEMS) {
 const mixBtn = document.createElement("button");
 mixBtn.className = "grp mix";
 mixBtn.textContent = "🔀 Mix them up";
-mixBtn.onclick = () => { mode = 0; markMode(); reshuffle(); relayout(true); updateStatus(); };
+mixBtn.onclick = () => { stopMoving(); mode = 0; markMode(); reshuffle(); relayout(true); updateStatus(); };
 $("groups").appendChild(mixBtn);
 for (const g of Object.keys(GROUPS).map(Number)) {
   const b = document.createElement("button");
@@ -77,9 +78,65 @@ for (const g of Object.keys(GROUPS).map(Number)) {
   b.dataset.g = g;
   b.textContent = g;
   b.setAttribute("aria-label", "Groups of " + g);
-  b.onclick = () => { mode = g; markMode(); relayout(true); updateStatus(); };
+  b.onclick = () => { stopMoving(); mode = g; markMode(); relayout(true); updateStatus(); };
   $("groups").appendChild(b);
 }
+/* ---------------- Moving around ---------------- */
+const moveBtn = $("move"), speedEl = $("speed");
+moveBtn.onclick = () => (moving ? stopMoving() : startMoving());
+
+function startMoving() {
+  const now = performance.now();
+  const e = ease((now - moveStart) / MOVE_MS);
+  S0 = S;   // finish any size change straight away
+  for (const it of items) {
+    it.mx = it.x0 + (it.x1 - it.x0) * e;
+    it.my = it.y0 + (it.y1 - it.y0) * e;
+    giveVelocity(it);
+  }
+  if (mode !== 0) { mode = 0; markMode(); updateStatus(); }
+  frames = [];
+  moving = true;
+  lastTick = now;
+  moveBtn.textContent = "⏸ Stop";
+  moveBtn.setAttribute("aria-pressed", "true");
+  kick();
+}
+function stopMoving() {
+  if (!moving) return;
+  moving = false;
+  // Everything stays where it stopped; the next rearrange slides from here.
+  for (const it of items) {
+    if (it.mx === undefined) continue;
+    it.x0 = it.x1 = it.mx;
+    it.y0 = it.y1 = it.my;
+    it.mx = it.my = undefined;
+  }
+  moveStart = -1e9;
+  moveBtn.textContent = "▶ Move";
+  moveBtn.setAttribute("aria-pressed", "false");
+  kick();
+}
+function giveVelocity(it) {
+  const a = Math.random() * Math.PI * 2, f = 0.6 + Math.random() * 0.8;
+  it.vx = Math.cos(a) * f;
+  it.vy = Math.sin(a) * f;
+}
+// Move every item a little and bounce it off the board edges.
+function step(dt) {
+  const v = speedEl.value * 25 * dt / 1000;   // pixels this frame
+  const maxX = W - PAD - S, maxY = H - PAD - S;
+  for (const it of items) {
+    if (it.mx === undefined) { it.mx = it.x1; it.my = it.y1; giveVelocity(it); }
+    it.mx += it.vx * v;
+    it.my += it.vy * v;
+    if (it.mx < PAD) { it.mx = PAD; it.vx = Math.abs(it.vx); }
+    else if (it.mx > maxX) { it.mx = maxX; it.vx = -Math.abs(it.vx); }
+    if (it.my < PAD) { it.my = PAD; it.vy = Math.abs(it.vy); }
+    else if (it.my > maxY) { it.my = maxY; it.vy = -Math.abs(it.vy); }
+  }
+}
+
 function markMode() {
   document.querySelectorAll(".grp").forEach(b =>
     b.setAttribute("aria-pressed", b === mixBtn ? mode === 0 : +b.dataset.g === mode));
@@ -110,7 +167,9 @@ canvas.addEventListener("click", e => {
   const slack = Math.max(0, (14 - S) / 2);   // easier to hit tiny items
   for (let i = items.length - 1; i >= 0; i--) {
     const it = items[i];
-    if (x >= it.x1 - slack && x <= it.x1 + S + slack && y >= it.y1 - slack && y <= it.y1 + S + slack) {
+    const ix = moving ? it.mx : it.x1, iy = moving ? it.my : it.y1;
+    if (ix === undefined) continue;
+    if (x >= ix - slack && x <= ix + S + slack && y >= iy - slack && y <= iy + S + slack) {
       it.counted = !it.counted;
       tapped += it.counted ? 1 : -1;
       updateStatus();
@@ -271,6 +330,7 @@ function relayout(animate) {
   S = newS;
   moveStart = now;
   framesStart = slide ? now : -1e9;
+  if (moving) { frames = []; S0 = S; }
   kick();
 }
 
@@ -352,7 +412,8 @@ function draw(now) {
     const p = reduceMotion ? 1 : (now - it.born) / POP_MS;
     if (p <= 0) continue;
     const sc = p >= 1 ? 1 : 1 + 2.7 * Math.pow(p - 1, 3) + 1.7 * Math.pow(p - 1, 2);   // pop with a little bounce
-    const x = it.x0 + (it.x1 - it.x0) * e, y = it.y0 + (it.y1 - it.y0) * e;
+    const x = moving ? it.mx : it.x0 + (it.x1 - it.x0) * e;
+    const y = moving ? it.my : it.y0 + (it.y1 - it.y0) * e;
     const z = curS * sc, off = (curS - z) / 2;
     if (it.counted) {
       ctx.fillStyle = counted;
@@ -364,11 +425,12 @@ function draw(now) {
 }
 
 function kick() {
-  if (!raf) raf = requestAnimationFrame(tick);
+  if (!raf) { lastTick = performance.now(); raf = requestAnimationFrame(tick); }
 }
 function tick(now) {
+  if (moving) { step(Math.max(0, Math.min(50, now - lastTick))); lastTick = now; }
   draw(now);
-  const busy = now < moveStart + MOVE_MS || now < lastBorn + POP_MS || now < framesStart + 400;
+  const busy = moving || now < moveStart + MOVE_MS || now < lastBorn + POP_MS || now < framesStart + 400;
   raf = busy ? requestAnimationFrame(tick) : 0;
 }
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", kick);
