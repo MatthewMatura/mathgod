@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Count With Me</title>
+<style>
+  :root {
+    --bg: #fff8ec;
+    --panel: #ffffff;
+    --ink: #2b2a33;
+    --muted: #6b6878;
+    --accent: #ff7a59;
+    --accent-ink: #ffffff;
+    --frame: #fde7c8;
+    --frame-line: #f3c98f;
+    --chip: #f4efe6;
+    --chip-on: #2b2a33;
+    --chip-on-ink: #ffffff;
+    --counted: #7bd389;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1d1c24;
+      --panel: #2a2933;
+      --ink: #f4f2fa;
+      --muted: #aaa6bb;
+      --frame: #34323f;
+      --frame-line: #4a475a;
+      --chip: #34323f;
+      --chip-on: #ffd36e;
+      --chip-on-ink: #1d1c24;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Trebuchet MS", "Avenir Next", system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    padding: 12px 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    align-items: center;
+    justify-content: center;
+    background: var(--panel);
+    box-shadow: 0 2px 10px rgba(0,0,0,.06);
+  }
+  .number-row { display: flex; align-items: center; gap: 10px; }
+  .step {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    border: none;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-size: 32px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .step:active { transform: scale(.92); }
+  #num {
+    width: 150px;
+    font-size: 44px;
+    font-weight: bold;
+    text-align: center;
+    padding: 4px 8px;
+    border: 3px solid var(--frame-line);
+    border-radius: 16px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: inherit;
+  }
+  #num::-webkit-inner-spin-button, #num::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  #num { -moz-appearance: textfield; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .chip {
+    font-size: 30px;
+    width: 54px; height: 54px;
+    border-radius: 14px;
+    border: none;
+    background: var(--chip);
+    cursor: pointer;
+  }
+  .chip[aria-pressed="true"] { background: var(--chip-on); box-shadow: 0 0 0 3px var(--accent); }
+  .toggles { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; font-size: 17px; color: var(--muted); }
+  .toggles label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  .toggles input { width: 20px; height: 20px; accent-color: var(--accent); }
+
+  .status {
+    text-align: center;
+    padding: 10px 16px 0;
+    font-size: 22px;
+    min-height: 40px;
+  }
+  .status b { color: var(--accent); }
+  .status .tapped { color: var(--muted); font-size: 18px; }
+
+  #board {
+    flex: 1;
+    min-height: 0;
+    margin: 10px 16px 16px;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .frame {
+    display: grid;
+    grid-template-columns: repeat(5, var(--s));
+    grid-auto-rows: var(--s);
+    background: var(--frame);
+    border: 2px solid var(--frame-line);
+    border-radius: 10px;
+    padding: var(--pad);
+    margin: var(--gap);
+  }
+  .loose { display: flex; flex-wrap: wrap; justify-content: center; align-content: center; }
+  .cell {
+    width: var(--s); height: var(--s);
+    display: flex; align-items: center; justify-content: center;
+    font-size: calc(var(--s) * .78);
+    line-height: 1;
+    user-select: none;
+    cursor: pointer;
+    border-radius: 30%;
+  }
+  .frame .cell { box-shadow: inset 0 0 0 1px var(--frame-line); border-radius: 4px; }
+  .item { display: inline-block; animation: pop .35s cubic-bezier(.3,1.6,.6,1) both; }
+  .cell.counted { background: var(--counted); }
+  .beach {
+    background:
+      radial-gradient(circle at 50% 50%, #fff 0 12%, transparent 13%),
+      conic-gradient(#ff5a5f 0 60deg, #fff 0 120deg, #2f9bff 0 180deg, #fff 0 240deg, #ffd23f 0 300deg, #fff 0 360deg);
+    box-shadow: inset -3px -4px 0 rgba(0,0,0,.12), 0 0 0 1px rgba(0,0,0,.15);
+  }
+  .dot { width: 80%; height: 80%; border-radius: 50%; display: inline-block; }
+  @keyframes pop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .item { animation: none; } }
+  @media (max-width: 520px) {
+    #num { width: 120px; font-size: 36px; }
+    .step { width: 48px; height: 48px; font-size: 28px; }
+    .chip { width: 46px; height: 46px; font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="number-row">
+    <button class="step" id="minus" aria-label="One less">−</button>
+    <input id="num" type="number" inputmode="numeric" min="0" max="1000" value="7" aria-label="Number">
+    <button class="step" id="plus" aria-label="One more">+</button>
+  </div>
+  <div class="chips" id="chips" role="group" aria-label="Choose an item"></div>
+  <div class="toggles">
+    <label><input type="checkbox" id="tens" checked> Groups of ten</label>
+    <label><input type="checkbox" id="speak"> Count out loud</label>
+  </div>
+</header>
+<div class="status" id="status"></div>
+<main id="board" aria-live="polite"></main>
+
+<script>
+const MAX = 1000;
+const ITEMS = [
+  { id: "puppy", label: "Puppies", emoji: "🐶" },
+  { id: "circle", label: "Circles", dot: true },
+  { id: "ball", label: "Beach balls", beach: true },
+  { id: "snow", label: "Snowflakes", emoji: "❄️" },
+  { id: "star", label: "Stars", emoji: "⭐" },
+  { id: "apple", label: "Apples", emoji: "🍎" },
+  { id: "butterfly", label: "Butterflies", emoji: "🦋" },
+  { id: "kitty", label: "Kittens", emoji: "🐱" },
+  { id: "fish", label: "Fish", emoji: "🐠" },
+  { id: "heart", label: "Hearts", emoji: "💖" },
+];
+const DOT_COLORS = ["#ff7a59", "#4fa3ff", "#7bd389", "#ffcc4d", "#b48cff"];
+
+const $ = id => document.getElementById(id);
+const numEl = $("num"), board = $("board"), statusEl = $("status");
+let item = ITEMS[0];
+let tapped = 0;
+let speakTimer = null;
+
+// Item picker
+for (const it of ITEMS) {
+  const b = document.createElement("button");
+  b.className = "chip";
+  b.title = it.label;
+  b.setAttribute("aria-label", it.label);
+  b.setAttribute("aria-pressed", it === item);
+  b.innerHTML = it.dot ? '<span class="dot" style="background:#4fa3ff;width:30px;height:30px"></span>'
+    : it.beach ? '<span class="dot beach" style="width:32px;height:32px"></span>' : it.emoji;
+  b.onclick = () => {
+    item = it;
+    document.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", c === b));
+    render(false);
+  };
+  $("chips").appendChild(b);
+}
+
+function getN() {
+  let n = parseInt(numEl.value, 10);
+  if (isNaN(n) || n < 0) n = 0;
+  return Math.min(n, MAX);
+}
+function setN(n) {
+  numEl.value = Math.max(0, Math.min(MAX, n));
+  render(true);
+}
+$("minus").onclick = () => setN(getN() - 1);
+$("plus").onclick = () => setN(getN() + 1);
+numEl.addEventListener("input", () => render(true));
+$("tens").onchange = () => render(false);
+$("speak").onchange = () => { if (!$("speak").checked) stopSpeaking(); else render(true); };
+window.addEventListener("resize", () => { clearTimeout(window._rt); window._rt = setTimeout(() => render(false), 150); });
+
+// Find the biggest item size that fits everything on the board.
+function fitSize(n, grouped) {
+  const W = board.clientWidth, H = board.clientHeight;
+  for (let s = 110; s > 4; s -= 1) {
+    if (grouped) {
+      const pad = Math.max(2, s * 0.12), gap = Math.max(2, s * 0.15);
+      const fw = 5 * s + 2 * pad + 4 + 2 * gap;
+      const fh = 2 * s + 2 * pad + 4 + 2 * gap;
+      const perRow = Math.floor(W / fw);
+      if (perRow < 1) continue;
+      const rows = Math.ceil(Math.ceil(n / 10) / perRow);
+      if (rows * fh <= H) return { s, pad, gap };
+    } else {
+      const perRow = Math.floor(W / s);
+      if (perRow < 1) continue;
+      if (Math.ceil(n / perRow) * s <= H) return { s };
+    }
+  }
+  return { s: 4, pad: 1, gap: 1 };
+}
+
+function makeItem(i) {
+  const span = document.createElement("span");
+  span.className = item.dot ? "item dot" : item.beach ? "item dot beach" : "item";
+  if (item.dot) span.style.background = DOT_COLORS[Math.floor(i / 10) % DOT_COLORS.length];
+  else span.textContent = item.emoji;
+  return span;
+}
+
+function render(animate) {
+  const n = getN();
+  if (String(n) !== numEl.value && numEl.value !== "") numEl.value = n;
+  const grouped = $("tens").checked;
+  tapped = 0;
+  board.innerHTML = "";
+  if (n === 0) { updateStatus(0); stopSpeaking(); return; }
+
+  const { s, pad, gap } = fitSize(n, grouped);
+  board.style.setProperty("--s", s + "px");
+  board.style.setProperty("--pad", (pad || 0) + "px");
+  board.style.setProperty("--gap", (gap || 0) + "px");
+  board.className = grouped ? "" : "loose";
+
+  // Spread the pop-in over at most ~2 seconds.
+  const step = animate ? Math.min(90, 2000 / n) : 0;
+  let container = board;
+  for (let i = 0; i < n; i++) {
+    if (grouped && i % 10 === 0) {
+      container = document.createElement("div");
+      container.className = "frame";
+      board.appendChild(container);
+    }
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    const it = makeItem(i);
+    if (step) it.style.animationDelay = (i * step) + "ms";
+    else it.style.animation = "none";
+    cell.appendChild(it);
+    cell.onclick = () => {
+      cell.classList.toggle("counted");
+      tapped += cell.classList.contains("counted") ? 1 : -1;
+      updateStatus(n);
+    };
+    container.appendChild(cell);
+  }
+  // Empty spots fill out the last ten-frame so "how many more to make ten" is visible.
+  if (grouped && n % 10) for (let i = n % 10; i < 10; i++) {
+    const cell = document.createElement("div"); cell.className = "cell"; cell.style.cursor = "default";
+    container.appendChild(cell);
+  }
+  updateStatus(n);
+  if (animate && $("speak").checked) countAloud(n);
+}
+
+function plural(k, word) { return k + " " + word + (k === 1 ? "" : "s"); }
+
+function updateStatus(n) {
+  if (n === 0) { statusEl.innerHTML = "Type a number to fill the board!"; return; }
+  const singular = item.label === "Puppies" ? "Puppy" : item.label === "Butterflies" ? "Butterfly" : item.label === "Fish" ? "Fish" : item.label.replace(/s$/, "");
+  let html = `<b>${n}</b> ${(n === 1 ? singular : item.label).toLowerCase()}`;
+  if (n >= 10) {
+    const h = Math.floor(n / 100), t = Math.floor((n % 100) / 10), o = n % 10;
+    const parts = [];
+    if (h) parts.push(plural(h, "hundred"));
+    if (t) parts.push(plural(t, "ten"));
+    if (o) parts.push(plural(o, "one"));
+    html += ` = ${parts.join(" + ")}`;
+  }
+  if (tapped) html += ` <span class="tapped">· you've tapped ${tapped}</span>`;
+  statusEl.innerHTML = html;
+}
+
+function stopSpeaking() {
+  clearTimeout(speakTimer);
+  if ("speechSynthesis" in window) speechSynthesis.cancel();
+}
+function countAloud(n) {
+  stopSpeaking();
+  if (!("speechSynthesis" in window)) return;
+  // Counting every number is fun up to 30; beyond that just say the number.
+  speakTimer = setTimeout(() => {
+    if (n > 30) { speechSynthesis.speak(new SpeechSynthesisUtterance(String(n))); return; }
+    for (let i = 1; i <= n; i++) {
+      const u = new SpeechSynthesisUtterance(String(i));
+      u.rate = 1.1;
+      speechSynthesis.speak(u);
+    }
+  }, 400);
+}
+
+render(true);
+</script>
+</body>
+</html>
