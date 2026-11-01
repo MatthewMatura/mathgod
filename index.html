@@ -16,7 +16,6 @@
     --frame-line: #f3c98f;
     --chip: #f4efe6;
     --chip-on: #2b2a33;
-    --chip-on-ink: #ffffff;
     --counted: #7bd389;
   }
   @media (prefers-color-scheme: dark) {
@@ -29,7 +28,6 @@
       --frame-line: #4a475a;
       --chip: #34323f;
       --chip-on: #ffd36e;
-      --chip-on-ink: #1d1c24;
     }
   }
   * { box-sizing: border-box; }
@@ -39,19 +37,40 @@
     color: var(--ink);
     font-family: "Trebuchet MS", "Avenir Next", system-ui, sans-serif;
     display: flex;
-    flex-direction: column;
+    overflow: hidden;
   }
-  header {
-    padding: 12px 16px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px 20px;
-    align-items: center;
-    justify-content: center;
+
+  /* ---------- Sidebar ---------- */
+  aside {
+    width: 250px;
+    flex: none;
     background: var(--panel);
-    box-shadow: 0 2px 10px rgba(0,0,0,.06);
+    box-shadow: 2px 0 10px rgba(0,0,0,.06);
+    padding: 16px 14px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    z-index: 2;
   }
-  .number-row { display: flex; align-items: center; gap: 10px; }
+  h1 { margin: 0; font-size: 22px; text-align: center; }
+  h2 { margin: 0 0 8px; font-size: 14px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  #num {
+    width: 100%;
+    font-size: 44px;
+    font-weight: bold;
+    text-align: center;
+    padding: 4px 6px;
+    border: 3px solid var(--frame-line);
+    border-radius: 16px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: inherit;
+  }
+  #num:focus { outline: none; border-color: var(--accent); }
+  #num::-webkit-inner-spin-button, #num::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  #num { -moz-appearance: textfield; }
+  .steps { display: flex; gap: 10px; justify-content: center; margin-top: 10px; }
   .step {
     width: 56px; height: 56px;
     border-radius: 50%;
@@ -63,275 +82,434 @@
     cursor: pointer;
     line-height: 1;
   }
-  .step:active { transform: scale(.92); }
-  #num {
-    width: 150px;
-    font-size: 44px;
-    font-weight: bold;
-    text-align: center;
-    padding: 4px 8px;
-    border: 3px solid var(--frame-line);
-    border-radius: 16px;
-    background: var(--bg);
-    color: var(--ink);
-    font-family: inherit;
-  }
-  #num::-webkit-inner-spin-button, #num::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-  #num { -moz-appearance: textfield; }
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .step:active, .chip:active, .grp:active { transform: scale(.92); }
+  .chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(48px, 1fr)); gap: 8px; }
   .chip {
-    font-size: 30px;
-    width: 54px; height: 54px;
+    font-size: 28px;
+    height: 52px;
     border-radius: 14px;
     border: none;
     background: var(--chip);
     cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
   }
   .chip[aria-pressed="true"] { background: var(--chip-on); box-shadow: 0 0 0 3px var(--accent); }
-  .toggles { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; font-size: 17px; color: var(--muted); }
-  .toggles label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
-  .toggles input { width: 20px; height: 20px; accent-color: var(--accent); }
+  .groups { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .grp {
+    height: 46px;
+    border-radius: 12px;
+    border: none;
+    background: var(--chip);
+    color: var(--ink);
+    font-family: inherit;
+    font-weight: bold;
+    font-size: 20px;
+    cursor: pointer;
+  }
+  .grp.mix { grid-column: 1 / -1; font-size: 18px; }
+  .grp[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+  .toggle { display: flex; align-items: center; gap: 8px; font-size: 17px; color: var(--muted); cursor: pointer; }
+  .toggle input { width: 20px; height: 20px; accent-color: var(--accent); }
 
+  /* ---------- Board ---------- */
+  main { flex: 1; min-width: 0; overflow: auto; position: relative; }
   .status {
+    position: sticky; top: 0; left: 0;
+    z-index: 1;
+    background: var(--bg);
     text-align: center;
-    padding: 10px 16px 0;
+    padding: 12px 16px;
     font-size: 22px;
-    min-height: 40px;
   }
   .status b { color: var(--accent); }
   .status .tapped { color: var(--muted); font-size: 18px; }
-
-  #board {
-    flex: 1;
-    min-height: 0;
-    margin: 10px 16px 16px;
-    display: flex;
-    flex-wrap: wrap;
-    align-content: center;
-    justify-content: center;
-    overflow: hidden;
-  }
+  #stage { position: relative; }
   .frame {
-    display: grid;
-    grid-template-columns: repeat(5, var(--s));
-    grid-auto-rows: var(--s);
+    position: absolute;
     background: var(--frame);
     border: 2px solid var(--frame-line);
     border-radius: 10px;
-    padding: var(--pad);
-    margin: var(--gap);
+    animation: fade .4s ease both;
   }
-  .loose { display: flex; flex-wrap: wrap; justify-content: center; align-content: center; }
-  .cell {
+  .frame > div {
+    position: absolute;
+    outline: 1px solid var(--frame-line);
+    background-image:
+      linear-gradient(to right, var(--frame-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--frame-line) 1px, transparent 1px);
+    background-size: var(--s) var(--s);
+  }
+  .it {
+    position: absolute; left: 0; top: 0;
     width: var(--s); height: var(--s);
     display: flex; align-items: center; justify-content: center;
     font-size: calc(var(--s) * .78);
     line-height: 1;
     user-select: none;
+    -webkit-user-select: none;
     cursor: pointer;
     border-radius: 30%;
   }
-  .frame .cell { box-shadow: inset 0 0 0 1px var(--frame-line); border-radius: 4px; }
-  .item { display: inline-block; animation: pop .35s cubic-bezier(.3,1.6,.6,1) both; }
-  .cell.counted { background: var(--counted); }
+  #stage.moving .it { transition: transform .8s cubic-bezier(.5,0,.2,1); }
+  .it > span { display: inline-block; animation: pop .35s cubic-bezier(.3,1.6,.6,1) both; }
+  .it.counted { background: var(--counted); }
+  .dot { width: 80%; height: 80%; border-radius: 50%; }
   .beach {
     background:
       radial-gradient(circle at 50% 50%, #fff 0 12%, transparent 13%),
-      conic-gradient(#ff5a5f 0 60deg, #fff 0 120deg, #2f9bff 0 180deg, #fff 0 240deg, #ffd23f 0 300deg, #fff 0 360deg);
+      conic-gradient(#ff5a5f 0 60deg, #fff 0 120deg, #2f9bff 0 180deg, #fff 0 240deg, #ffd23f 0 300deg, #fff 0 360deg) !important;
     box-shadow: inset -3px -4px 0 rgba(0,0,0,.12), 0 0 0 1px rgba(0,0,0,.15);
   }
-  .dot { width: 80%; height: 80%; border-radius: 50%; display: inline-block; }
   @keyframes pop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) { .item { animation: none; } }
-  @media (max-width: 520px) {
-    #num { width: 120px; font-size: 36px; }
-    .step { width: 48px; height: 48px; font-size: 28px; }
-    .chip { width: 46px; height: 46px; font-size: 26px; }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) {
+    .it > span, .frame { animation: none; }
+    #stage.moving .it { transition: none; }
+  }
+
+  /* Phones: slimmer sidebar */
+  @media (max-width: 600px) {
+    aside { width: 132px; padding: 12px 8px; gap: 14px; }
+    h1 { font-size: 16px; }
+    h2 { font-size: 11px; }
+    #num { font-size: 26px; border-radius: 12px; padding: 4px 2px; }
+    .step { width: 46px; height: 46px; font-size: 26px; }
+    .steps { gap: 8px; }
+    .chips { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .chip { height: 48px; font-size: 26px; }
+    .groups { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .grp { height: 42px; font-size: 18px; }
+    .grp.mix { font-size: 15px; }
+    .toggle { font-size: 14px; }
+    .status { font-size: 17px; padding: 10px 8px; }
   }
 </style>
 </head>
 <body>
-<header>
-  <div class="number-row">
-    <button class="step" id="minus" aria-label="One less">−</button>
-    <input id="num" type="number" inputmode="numeric" min="0" max="1000" value="7" aria-label="Number">
-    <button class="step" id="plus" aria-label="One more">+</button>
-  </div>
-  <div class="chips" id="chips" role="group" aria-label="Choose an item"></div>
-  <div class="toggles">
-    <label><input type="checkbox" id="tens" checked> Groups of ten</label>
-    <label><input type="checkbox" id="speak"> Count out loud</label>
-  </div>
-</header>
-<div class="status" id="status"></div>
-<main id="board" aria-live="polite"></main>
+<aside>
+  <h1>Count With Me</h1>
+  <section>
+    <h2><label for="num">Number</label></h2>
+    <input id="num" type="number" inputmode="numeric" min="0" max="10000" value="7">
+    <div class="steps">
+      <button class="step" id="minus" aria-label="One less">−</button>
+      <button class="step" id="plus" aria-label="One more">+</button>
+    </div>
+  </section>
+  <section>
+    <h2>Things</h2>
+    <div class="chips" id="chips" role="group" aria-label="Choose what to count"></div>
+  </section>
+  <section>
+    <h2>Make groups of</h2>
+    <div class="groups" id="groups" role="group" aria-label="Arrange"></div>
+  </section>
+  <label class="toggle"><input type="checkbox" id="speak"> Count out loud</label>
+</aside>
+<main id="main">
+  <div class="status" id="status"></div>
+  <div id="stage"></div>
+</main>
 
 <script>
-const MAX = 1000;
+const MAX = 10000;
+const PAD = 16;
 const ITEMS = [
-  { id: "puppy", label: "Puppies", emoji: "🐶" },
-  { id: "circle", label: "Circles", dot: true },
-  { id: "ball", label: "Beach balls", beach: true },
-  { id: "snow", label: "Snowflakes", emoji: "❄️" },
-  { id: "star", label: "Stars", emoji: "⭐" },
-  { id: "apple", label: "Apples", emoji: "🍎" },
-  { id: "butterfly", label: "Butterflies", emoji: "🦋" },
-  { id: "kitty", label: "Kittens", emoji: "🐱" },
-  { id: "fish", label: "Fish", emoji: "🐠" },
-  { id: "heart", label: "Hearts", emoji: "💖" },
+  { label: "Puppies", one: "puppy", emoji: "🐶" },
+  { label: "Circles", one: "circle", dot: true },
+  { label: "Beach balls", one: "beach ball", beach: true },
+  { label: "Snowflakes", one: "snowflake", emoji: "❄️" },
+  { label: "Stars", one: "star", emoji: "⭐" },
+  { label: "Apples", one: "apple", emoji: "🍎" },
+  { label: "Butterflies", one: "butterfly", emoji: "🦋" },
+  { label: "Kittens", one: "kitten", emoji: "🐱" },
+  { label: "Fish", one: "fish", emoji: "🐠" },
+  { label: "Hearts", one: "heart", emoji: "💖" },
 ];
+// Group size -> [columns, rows] of each group's box
+const GROUPS = { 2: [2, 1], 3: [3, 1], 4: [2, 2], 5: [5, 1], 10: [5, 2], 100: [10, 10] };
 const DOT_COLORS = ["#ff7a59", "#4fa3ff", "#7bd389", "#ffcc4d", "#b48cff"];
 
 const $ = id => document.getElementById(id);
-const numEl = $("num"), board = $("board"), statusEl = $("status");
-let item = ITEMS[0];
-let tapped = 0;
-let speakTimer = null;
+const numEl = $("num"), main = $("main"), stage = $("stage"), statusEl = $("status");
 
-// Item picker
+let item = ITEMS[0];
+let mode = 0;            // 0 = scattered, otherwise the group size
+let items = [];          // item elements, in the order they were added
+let used = new Set();    // scatter slots that are taken
+let cols = 0, cell = 0, lastWidth = 0;
+let tapped = 0;
+
+const sizeFor = () => (innerWidth <= 600 ? 34 : 46);
+let S = sizeFor();
+
+/* ---------- Sidebar controls ---------- */
 for (const it of ITEMS) {
   const b = document.createElement("button");
   b.className = "chip";
   b.title = it.label;
   b.setAttribute("aria-label", it.label);
   b.setAttribute("aria-pressed", it === item);
-  b.innerHTML = it.dot ? '<span class="dot" style="background:#4fa3ff;width:30px;height:30px"></span>'
-    : it.beach ? '<span class="dot beach" style="width:32px;height:32px"></span>' : it.emoji;
+  b.innerHTML = it.dot ? '<span class="dot" style="background:#4fa3ff;width:28px;height:28px"></span>'
+    : it.beach ? '<span class="dot beach" style="width:30px;height:30px"></span>' : it.emoji;
   b.onclick = () => {
     item = it;
     document.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", c === b));
-    render(false);
+    for (const el of items) fillItem(el);
+    paintDots();
+    updateStatus();
+    numEl.focus();
+    numEl.select();
   };
   $("chips").appendChild(b);
 }
 
+const mixBtn = document.createElement("button");
+mixBtn.className = "grp mix";
+mixBtn.textContent = "🔀 Mix them up";
+mixBtn.onclick = () => arrange(0, true);
+$("groups").appendChild(mixBtn);
+for (const g of Object.keys(GROUPS).map(Number)) {
+  const b = document.createElement("button");
+  b.className = "grp";
+  b.dataset.g = g;
+  b.textContent = g;
+  b.setAttribute("aria-label", "Groups of " + g);
+  b.onclick = () => arrange(g, false);
+  $("groups").appendChild(b);
+}
+function markMode() {
+  document.querySelectorAll(".grp").forEach(b =>
+    b.setAttribute("aria-pressed", b === mixBtn ? mode === 0 : +b.dataset.g === mode));
+}
+
 function getN() {
-  let n = parseInt(numEl.value, 10);
-  if (isNaN(n) || n < 0) n = 0;
-  return Math.min(n, MAX);
+  const n = parseInt(numEl.value, 10);
+  return isNaN(n) || n < 0 ? 0 : Math.min(n, MAX);
 }
-function setN(n) {
-  numEl.value = Math.max(0, Math.min(MAX, n));
-  render(true);
-}
-$("minus").onclick = () => setN(getN() - 1);
-$("plus").onclick = () => setN(getN() + 1);
-numEl.addEventListener("input", () => render(true));
-$("tens").onchange = () => render(false);
-$("speak").onchange = () => { if (!$("speak").checked) stopSpeaking(); else render(true); };
-window.addEventListener("resize", () => { clearTimeout(window._rt); window._rt = setTimeout(() => render(false), 150); });
+$("minus").onclick = () => { numEl.value = Math.max(0, getN() - 1); setCount(getN()); say(getN()); };
+$("plus").onclick = () => { numEl.value = Math.min(MAX, getN() + 1); setCount(getN()); say(getN()); };
 
-// Find the biggest item size that fits everything on the board.
-function fitSize(n, grouped) {
-  const W = board.clientWidth, H = board.clientHeight;
-  for (let s = 110; s > 4; s -= 1) {
-    if (grouped) {
-      const pad = Math.max(2, s * 0.12), gap = Math.max(2, s * 0.15);
-      const fw = 5 * s + 2 * pad + 4 + 2 * gap;
-      const fh = 2 * s + 2 * pad + 4 + 2 * gap;
-      const perRow = Math.floor(W / fw);
-      if (perRow < 1) continue;
-      const rows = Math.ceil(Math.ceil(n / 10) / perRow);
-      if (rows * fh <= H) return { s, pad, gap };
-    } else {
-      const perRow = Math.floor(W / s);
-      if (perRow < 1) continue;
-      if (Math.ceil(n / perRow) * s <= H) return { s };
+let typeTimer;
+numEl.addEventListener("input", () => {
+  if (getN() !== +numEl.value && numEl.value !== "") numEl.value = getN();
+  // A newly typed number starts scattered.
+  if (mode !== 0) { mode = 0; markMode(); clearFrames(); }
+  setCount(getN());
+  clearTimeout(typeTimer);
+  typeTimer = setTimeout(() => countAloud(getN()), 700);
+});
+numEl.addEventListener("keydown", e => { if (e.key === "Enter") numEl.blur(); });
+$("speak").onchange = () => { if (!$("speak").checked) stopSpeaking(); };
+
+// Tap an item to mark it as counted.
+stage.addEventListener("click", e => {
+  const el = e.target.closest(".it");
+  if (!el) return;
+  el.classList.toggle("counted");
+  tapped += el.classList.contains("counted") ? 1 : -1;
+  updateStatus();
+});
+
+addEventListener("resize", () => {
+  clearTimeout(window._rt);
+  window._rt = setTimeout(() => {
+    // Only width matters; ignore height changes from on-screen keyboards.
+    if (main.clientWidth === lastWidth && sizeFor() === S) return;
+    S = sizeFor();
+    rescatterAll();
+    layout();
+  }, 150);
+});
+
+/* ---------- Items ---------- */
+function fillItem(el) {
+  el.innerHTML = item.dot ? '<span class="dot"></span>'
+    : item.beach ? '<span class="dot beach"></span>' : "<span>" + item.emoji + "</span>";
+}
+function paintDots() {
+  if (!item.dot) return;
+  items.forEach((el, i) => {
+    const k = mode ? Math.floor(i / mode) : i;
+    el.firstChild.style.background = DOT_COLORS[k % DOT_COLORS.length];
+  });
+}
+
+/* ---------- Scatter: a jittered grid of slots, so items never overlap ---------- */
+function measure() {
+  lastWidth = main.clientWidth;
+  stage.style.setProperty("--s", S + "px");
+  cell = Math.round(S * 1.3);
+  cols = Math.max(1, Math.floor((lastWidth - 2 * PAD) / cell));
+}
+function visibleRows() {
+  return Math.max(1, Math.floor((main.clientHeight - statusEl.offsetHeight - 2 * PAD) / cell));
+}
+function scatterRows(n) {
+  const spread = n < 300 ? 2.2 : 1.35;   // leave room so it looks scattered, not packed
+  return Math.max(visibleRows(), Math.ceil(n * spread / cols));
+}
+function takeSlot(n) {
+  const total = scatterRows(n) * cols;
+  for (let tries = 0; tries < 60; tries++) {
+    const s = Math.floor(Math.random() * total);
+    if (!used.has(s)) { used.add(s); return s; }
+  }
+  for (let s = 0; ; s++) if (!used.has(s)) { used.add(s); return s; }
+}
+function rescatterAll() {
+  measure();
+  used.clear();
+  for (const el of items) {
+    el._slot = takeSlot(items.length);
+  }
+}
+
+/* ---------- Changing the count ---------- */
+function setCount(n) {
+  if (!cols) measure();
+  // Remove extras from the end.
+  while (items.length > n) {
+    const el = items.pop();
+    used.delete(el._slot);
+    if (el.classList.contains("counted")) tapped--;
+    el.remove();
+  }
+  // Add new ones, popping in one after another.
+  const add = n - items.length;
+  const step = Math.min(70, 1500 / Math.max(1, add));
+  const frag = document.createDocumentFragment();
+  for (let k = 0; k < add; k++) {
+    const el = document.createElement("div");
+    el.className = "it";
+    el._jx = Math.random();
+    el._jy = Math.random();
+    el._slot = takeSlot(n);
+    fillItem(el);
+    el.firstChild.style.animationDelay = (k * step) + "ms";
+    items.push(el);
+    frag.appendChild(el);
+  }
+  stage.appendChild(frag);
+  if (add < 0 || add > 0) layout();
+  updateStatus();
+}
+
+/* ---------- Arranging ---------- */
+function arrange(g, reshuffle) {
+  mode = g;
+  markMode();
+  if (reshuffle) rescatterAll();
+  // Slide items to their new spots (skipped for huge counts to stay smooth).
+  if (items.length <= 3000) {
+    stage.classList.add("moving");
+    clearTimeout(window._mt);
+    window._mt = setTimeout(() => stage.classList.remove("moving"), 900);
+  }
+  layout();
+  updateStatus();
+}
+
+function clearFrames() { stage.querySelectorAll(".frame").forEach(f => f.remove()); }
+
+function layout() {
+  if (!cols) measure();
+  const W = lastWidth - 2 * PAD;
+  clearFrames();
+  if (mode === 0) {
+    const off = PAD + Math.max(0, (W - cols * cell) / 2);
+    let maxRow = 0;
+    for (const el of items) {
+      const r = Math.floor(el._slot / cols), c = el._slot % cols;
+      maxRow = Math.max(maxRow, r);
+      const x = off + c * cell + el._jx * (cell - S);
+      const y = PAD + r * cell + el._jy * (cell - S);
+      el.style.transform = `translate(${x}px, ${y}px)`;
     }
-  }
-  return { s: 4, pad: 1, gap: 1 };
-}
-
-function makeItem(i) {
-  const span = document.createElement("span");
-  span.className = item.dot ? "item dot" : item.beach ? "item dot beach" : "item";
-  if (item.dot) span.style.background = DOT_COLORS[Math.floor(i / 10) % DOT_COLORS.length];
-  else span.textContent = item.emoji;
-  return span;
-}
-
-function render(animate) {
-  const n = getN();
-  if (String(n) !== numEl.value && numEl.value !== "") numEl.value = n;
-  const grouped = $("tens").checked;
-  tapped = 0;
-  board.innerHTML = "";
-  if (n === 0) { updateStatus(0); stopSpeaking(); return; }
-
-  const { s, pad, gap } = fitSize(n, grouped);
-  board.style.setProperty("--s", s + "px");
-  board.style.setProperty("--pad", (pad || 0) + "px");
-  board.style.setProperty("--gap", (gap || 0) + "px");
-  board.className = grouped ? "" : "loose";
-
-  // Spread the pop-in over at most ~2 seconds.
-  const step = animate ? Math.min(90, 2000 / n) : 0;
-  let container = board;
-  for (let i = 0; i < n; i++) {
-    if (grouped && i % 10 === 0) {
-      container = document.createElement("div");
-      container.className = "frame";
-      board.appendChild(container);
+    stage.style.width = "";
+    stage.style.height = (Math.max(scatterRows(items.length), maxRow + 1) * cell + 2 * PAD) + "px";
+  } else {
+    const [c, r] = GROUPS[mode];
+    const pad = 6, gap = 14;
+    const fw = c * S + 2 * pad + 4, fh = r * S + 2 * pad + 4;   // +4 for the border
+    const perRow = Math.max(1, Math.floor((W + gap) / (fw + gap)));
+    const rowW = perRow * (fw + gap) - gap;
+    const offX = PAD + Math.max(0, (W - rowW) / 2);
+    const nFrames = Math.ceil(items.length / mode);
+    const frag = document.createDocumentFragment();
+    for (let k = 0; k < nFrames; k++) {
+      const f = document.createElement("div");
+      f.className = "frame";
+      f.style.left = (offX + (k % perRow) * (fw + gap)) + "px";
+      f.style.top = (PAD + Math.floor(k / perRow) * (fh + gap)) + "px";
+      f.style.width = fw + "px";
+      f.style.height = fh + "px";
+      const inner = document.createElement("div");
+      inner.style.cssText = `left:${pad}px;top:${pad}px;width:${c * S}px;height:${r * S}px`;
+      f.appendChild(inner);
+      frag.appendChild(f);
     }
-    const cell = document.createElement("div");
-    cell.className = "cell";
-    const it = makeItem(i);
-    if (step) it.style.animationDelay = (i * step) + "ms";
-    else it.style.animation = "none";
-    cell.appendChild(it);
-    cell.onclick = () => {
-      cell.classList.toggle("counted");
-      tapped += cell.classList.contains("counted") ? 1 : -1;
-      updateStatus(n);
-    };
-    container.appendChild(cell);
+    stage.prepend(frag);
+    items.forEach((el, i) => {
+      const k = Math.floor(i / mode), j = i % mode;
+      const x = offX + (k % perRow) * (fw + gap) + 2 + pad + (j % c) * S;
+      const y = PAD + Math.floor(k / perRow) * (fh + gap) + 2 + pad + Math.floor(j / c) * S;
+      el.style.transform = `translate(${x}px, ${y}px)`;
+    });
+    stage.style.width = Math.max(lastWidth, rowW + 2 * PAD) + "px";
+    stage.style.height = (Math.ceil(nFrames / perRow) * (fh + gap) - gap + 2 * PAD) + "px";
   }
-  // Empty spots fill out the last ten-frame so "how many more to make ten" is visible.
-  if (grouped && n % 10) for (let i = n % 10; i < 10; i++) {
-    const cell = document.createElement("div"); cell.className = "cell"; cell.style.cursor = "default";
-    container.appendChild(cell);
-  }
-  updateStatus(n);
-  if (animate && $("speak").checked) countAloud(n);
+  paintDots();
 }
 
-function plural(k, word) { return k + " " + word + (k === 1 ? "" : "s"); }
-
-function updateStatus(n) {
+/* ---------- Status line ---------- */
+function plural(k, word) { return k.toLocaleString() + " " + word + (k === 1 ? "" : "s"); }
+function updateStatus() {
+  const n = items.length;
   if (n === 0) { statusEl.innerHTML = "Type a number to fill the board!"; return; }
-  const singular = item.label === "Puppies" ? "Puppy" : item.label === "Butterflies" ? "Butterfly" : item.label === "Fish" ? "Fish" : item.label.replace(/s$/, "");
-  let html = `<b>${n}</b> ${(n === 1 ? singular : item.label).toLowerCase()}`;
-  if (n >= 10) {
-    const h = Math.floor(n / 100), t = Math.floor((n % 100) / 10), o = n % 10;
+  const name = n === 1 ? item.one : item.label.toLowerCase();
+  let html = `<b>${n.toLocaleString()}</b> ${name}`;
+  if (mode === 0 || mode === 10 || mode === 100) {
+    if (n >= 10) {
+      const th = Math.floor(n / 1000), h = Math.floor(n % 1000 / 100), t = Math.floor(n % 100 / 10), o = n % 10;
+      const parts = [];
+      if (th) parts.push(plural(th, "thousand"));
+      if (h) parts.push(plural(h, "hundred"));
+      if (t) parts.push(plural(t, "ten"));
+      if (o) parts.push(plural(o, "one"));
+      html += " = " + parts.join(" + ");
+    }
+  } else {
+    const groups = Math.floor(n / mode), left = n % mode;
     const parts = [];
-    if (h) parts.push(plural(h, "hundred"));
-    if (t) parts.push(plural(t, "ten"));
-    if (o) parts.push(plural(o, "one"));
-    html += ` = ${parts.join(" + ")}`;
+    if (groups) parts.push(`${groups.toLocaleString()} group${groups === 1 ? "" : "s"} of ${mode}`);
+    if (left) parts.push(`${left} more`);
+    html += " = " + parts.join(" + ");
   }
-  if (tapped) html += ` <span class="tapped">· you've tapped ${tapped}</span>`;
+  if (tapped > 0) html += ` <span class="tapped">· you've tapped ${tapped.toLocaleString()}</span>`;
   statusEl.innerHTML = html;
 }
 
-function stopSpeaking() {
-  clearTimeout(speakTimer);
-  if ("speechSynthesis" in window) speechSynthesis.cancel();
+/* ---------- Counting out loud ---------- */
+function stopSpeaking() { if ("speechSynthesis" in window) speechSynthesis.cancel(); }
+function say(n) {
+  if (!$("speak").checked || !("speechSynthesis" in window)) return;
+  stopSpeaking();
+  speechSynthesis.speak(new SpeechSynthesisUtterance(String(n)));
 }
 function countAloud(n) {
+  if (!$("speak").checked || !("speechSynthesis" in window)) return;
   stopSpeaking();
-  if (!("speechSynthesis" in window)) return;
-  // Counting every number is fun up to 30; beyond that just say the number.
-  speakTimer = setTimeout(() => {
-    if (n > 30) { speechSynthesis.speak(new SpeechSynthesisUtterance(String(n))); return; }
-    for (let i = 1; i <= n; i++) {
-      const u = new SpeechSynthesisUtterance(String(i));
-      u.rate = 1.1;
-      speechSynthesis.speak(u);
-    }
-  }, 400);
+  if (n > 30) return say(n);   // counting every number is fun up to 30
+  for (let i = 1; i <= n; i++) {
+    const u = new SpeechSynthesisUtterance(String(i));
+    u.rate = 1.1;
+    speechSynthesis.speak(u);
+  }
 }
 
-render(true);
+markMode();
+setCount(getN());
 </script>
 </body>
 </html>
