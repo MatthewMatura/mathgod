@@ -131,6 +131,8 @@
     box-shadow: 0 4px 0 rgba(0,0,0,.15);
   }
   .grp.mix { grid-column: 1 / -1; font-size: 18px; }
+  .groups.list { grid-template-columns: 1fr !important; }
+  .groups.list .grp { text-align: left; padding-left: 12px; font-size: 17px; }
   .grp[aria-pressed="true"] { background: var(--sun); color: #3b2466; box-shadow: 0 4px 0 #d99a00, 0 0 0 3px #fff; }
   .grp.wide { width: 100%; font-size: 18px; }
   .grp.wide + .grp.wide { margin-top: 10px; }
@@ -333,7 +335,8 @@
     .chip { height: 48px; font-size: 26px; }
     .groups { grid-template-columns: repeat(2, 1fr) !important; gap: 6px; }
     .grp { min-height: 42px; font-size: 16px; }
-    .grp.mix, .grp.wide { font-size: 14px; }
+    .grp.mix, .grp.wide, .groups.list .grp { font-size: 14px; }
+    .groups.list .grp { padding-left: 6px; }
     .toggle { font-size: 14px; }
     .hint { font-size: 12px; }
     .top { padding: 8px 8px 2px; gap: 6px; }
@@ -503,7 +506,7 @@ function hitSprite(x, y, filter) {
   const s = E.S, slack = Math.max(0, (18 - s) / 2), t = now();
   for (let i = E.sprites.length - 1; i >= 0; i--) {
     const sp = E.sprites[i];
-    if (sp.die || (filter && !filter(sp))) continue;
+    if (sp.die || sp.hidden || (filter && !filter(sp))) continue;
     const p = posAt(sp, t);
     if (x >= p.x - slack && x <= p.x + s + slack && y >= p.y - slack && y <= p.y + s + slack) return sp;
   }
@@ -714,7 +717,7 @@ function draw(t) {
   let idx = 0;
   for (const sp of E.sprites) {
     idx++;
-    if (t < sp.born) continue;
+    if (t < sp.born || sp.hidden) continue;
     const a = va * (sp.die ? clamp01((sp.die - t) / 300) : 1);
     if (a <= 0) continue;
     const p = posAt(sp, t);
@@ -861,6 +864,24 @@ function scatterList(list, rect = board()) {
   const s = fitScatter(rect, list.length);
   E.S = s;
   scatterSpots(rect, list.length, s).forEach((p, i) => moveTo(list[i], p.x, p.y, 0, 0));
+}
+// Scatter a list inside r, keeping each item's spot when the list grows or shrinks.
+function scatterKeep(list, r, s) {
+  const c = s * 1.3, cols = Math.max(1, Math.floor(r.w / c)), rows = Math.max(1, Math.floor(r.h / c));
+  const key = cols + "x" + rows, total = cols * rows, used = new Set();
+  for (const sp of list) {
+    if (sp.scKey === key && !used.has(sp.scSlot)) used.add(sp.scSlot); else sp.scKey = null;
+  }
+  for (const sp of list) {
+    if (sp.scKey === key) continue;
+    let k, tries = 0;
+    do k = Math.floor(Math.random() * total); while (used.has(k) && ++tries < 60);
+    if (used.has(k)) for (k = 0; k < total - 1 && used.has(k); k++);
+    used.add(k);
+    sp.scSlot = k; sp.scKey = key; sp.jx = Math.random(); sp.jy = Math.random();
+  }
+  const ox = r.x + (r.w - cols * c) / 2, oy = r.y + (r.h - rows * c) / 2;
+  return list.map(sp => ({ x: ox + (sp.scSlot % cols) * c + sp.jx * (c - s), y: oy + Math.floor(sp.scSlot / cols) * c + sp.jy * (c - s) }));
 }
 // Make each item bounce in turn, calling onTick(1..n), then done().
 function countUp(list, { delay = 0, step, onTick, done } = {}) {
@@ -1198,12 +1219,15 @@ ACTS.eq = {
   limits: { "+": [[0, 20], [0, 20]], "−": [[0, 20], [0, 20]], "×": [[1, 10], [1, 10]], "÷": [[0, 100], [1, 10]] },
   LB: 48,   // room for text under the items
   usesPad: true,
+  level: "easy",   // easy: neat boxes · medium: scattered · hard: no items until you answer
   start() {
+    choice("Level", [["easy", "🟢 Easy: in boxes"], ["medium", "🟡 Medium: scattered"], ["hard", "🔴 Hard: no shapes"]],
+      this.level, v => { this.level = v; this.reset(); }, 1).buttons[0].parentElement.classList.add("list");
     choice("Operation", [["+", "+ Add"], ["−", "− Take away"], ["×", "× Times"], ["÷", "÷ Share"]], this.op, v => { this.op = v; this.reset(); }, 2);
     const s = side("");
     sideButton(s, "🎲 New numbers", () => this.random());
     this.flipBtn = sideButton(s, "🔄 Flip it around", () => this.flip());
-    s.insertAdjacentHTML("beforeend", '<p class="hint">Set the numbers with ▲ ▼ (or tap the board). Type your answer with the number pad, then press =</p>');
+    s.insertAdjacentHTML("beforeend", '<p class="hint">Set the numbers with ▲ ▼ (or tap the board). Type your answer with the number pad, then press =. Too easy? Try Medium or Hard!</p>');
     this.reset();
   },
   get a() { return this.vals[this.op][0]; },
@@ -1292,13 +1316,21 @@ ACTS.eq = {
         const half = (r.w - mid) / 2;
         L = { x: r.x, y: r.y, w: half, h: body.h }; R = { x: r.x + half + mid, y: r.y, w: half, h: body.h };
       }
-      const s = Math.min(fitGroups(L, a, 10), fitGroups(R, b, 10));
-      E.S = s;
-      const GL = groupLayout(L, a, 10, s), GR = groupLayout(R, b, 10, s);
-      if (a) GL.boxes.forEach(f => frame(f));
-      if (b) GR.boxes.forEach(f => frame(f));
-      this.A.forEach((sp, i) => { sp.tint = TINT_A; this.put(sp, GL.spot(i), anim); });
-      this.B.forEach((sp, i) => { sp.tint = TINT_B; this.put(sp, GR.spot(i), anim); });
+      if (this.level === "medium") {
+        const s = Math.min(fitScatter(L, a), fitScatter(R, b));
+        E.S = s;
+        const PL = scatterKeep(this.A, L, s), PR = scatterKeep(this.B, R, s);
+        this.A.forEach((sp, i) => { sp.tint = TINT_A; this.put(sp, PL[i], anim); });
+        this.B.forEach((sp, i) => { sp.tint = TINT_B; this.put(sp, PR[i], anim); });
+      } else {
+        const s = Math.min(fitGroups(L, a, 10), fitGroups(R, b, 10));
+        E.S = s;
+        const GL = groupLayout(L, a, 10, s), GR = groupLayout(R, b, 10, s);
+        if (a) GL.boxes.forEach(f => frame(f));
+        if (b) GR.boxes.forEach(f => frame(f));
+        this.A.forEach((sp, i) => { sp.tint = TINT_A; this.put(sp, GL.spot(i), anim); });
+        this.B.forEach((sp, i) => { sp.tint = TINT_B; this.put(sp, GR.spot(i), anim); });
+      }
       if (stack) {
         label({ x: r.x + r.w / 2, y: L.y + L.h + mid / 2, text: "+", size: 36 });
         label({ x: r.x + r.w / 2, y: textY, text: `${a} and ${b}`, size: 26 });
@@ -1308,30 +1340,51 @@ ACTS.eq = {
         label({ x: r.x + r.w / 2, y: body.y + body.h / 2, text: "+", size: 44 });
       }
     } else if (this.op === "−") {
-      const s = fitGroups(body, a, 10);
-      E.S = s;
-      const G = groupLayout(body, a, 10, s);
-      if (a) G.boxes.forEach(f => frame(f));
-      this.A.forEach((sp, i) => { sp.tint = i < a - b ? TINT_A : TINT_OFF; this.put(sp, G.spot(i), anim); });
+      let spot;
+      if (this.level === "medium") {
+        const s = fitScatter(body, a); E.S = s;
+        const P = scatterKeep(this.A, body, s); spot = i => P[i];
+      } else {
+        const s = fitGroups(body, a, 10); E.S = s;
+        const G = groupLayout(body, a, 10, s); spot = G.spot;
+        if (a) G.boxes.forEach(f => frame(f));
+      }
+      this.A.forEach((sp, i) => { sp.tint = i < a - b ? TINT_A : TINT_OFF; this.put(sp, spot(i), anim); });
       label({ x: r.x + r.w / 2, y: textY, text: `${a} take away ${b}`, size: 26 });
     } else if (this.op === "×") {
-      const s = fitGroups(body, a * b, b, MAXS(), { nf: a });
-      E.S = s;
-      const G = groupLayout(body, a * b, b, s, { nf: a });
-      G.boxes.forEach(f => frame(f));
+      let spot;
+      if (this.level === "medium") {
+        const s = fitScatter(body, a * b); E.S = s;
+        const P = scatterKeep(this.A, body, s); spot = i => P[i];
+      } else {
+        const s = fitGroups(body, a * b, b, MAXS(), { nf: a }); E.S = s;
+        const G = groupLayout(body, a * b, b, s, { nf: a }); spot = G.spot;
+        G.boxes.forEach(f => frame(f));
+      }
       this.A.forEach((sp, i) => {
         sp.g = Math.floor(i / b); sp.j = i % b;
         sp.tint = PALETTE[sp.g % PALETTE.length]; sp.ci = sp.g;
-        this.put(sp, G.spot(i), anim);
+        this.put(sp, spot(i), anim);
       });
       label({ x: r.x + r.w / 2, y: textY, text: `${a} group${a === 1 ? "" : "s"} of ${b}`, size: 26 });
     } else {
-      const { top, bot, s, GT, GB } = this.divLayout();
+      const { top, s, GT, GB } = this.divLayout();
       E.S = s;
-      if (a) GT.boxes.forEach(f => frame({ ...f, dashed: true, fill: null }));
+      let spot = GT.spot;
+      if (this.level === "medium") { const P = scatterKeep(this.A, top, s); spot = i => P[i]; }
+      else if (a) GT.boxes.forEach(f => frame({ ...f, dashed: true, fill: null }));
       GB.boxes.forEach(f => frame(f));
-      this.A.forEach((sp, i) => { sp.tint = TINT_A; this.put(sp, GT.spot(i), anim); });
+      this.A.forEach((sp, i) => { sp.tint = TINT_A; this.put(sp, spot(i), anim); });
       label({ x: r.x + r.w / 2, y: textY, text: `Share ${a} into ${b} group${b === 1 ? "" : "s"}`, size: 26 });
+    }
+    // Hard: keep the items hidden until the answer is checked; just the equation shows.
+    const hard = this.level === "hard";
+    this.A.concat(this.B).forEach(sp => { sp.hidden = hard; });
+    if (hard) {
+      E.frames = []; E.labels = [];
+      const cy = r.y + r.h * 0.42;
+      label({ x: r.x + r.w / 2, y: cy, text: "🧠", size: Math.min(110, r.w * .25) });
+      label({ x: r.x + r.w / 2, y: cy + Math.min(90, r.w * .2), text: "Solve it in your head!", size: r.w < 400 ? 20 : 30, color: css("--purple") });
     }
   },
   divLayout() {
@@ -1341,7 +1394,8 @@ ACTS.eq = {
     const top = { x: body.x, y: body.y, w: body.w, h: body.h * 0.42 };
     const bot = { x: body.x, y: body.y + top.h + 12, w: body.w, h: body.h - top.h - 12 };
     const below = 26;
-    const s = Math.min(fitGroups(top, a, 10), fitGroups(bot, b * cap, cap, MAXS(), { nf: b, below }));
+    const topFit = this.level === "medium" ? fitScatter(top, a) : fitGroups(top, a, 10);
+    const s = Math.min(topFit, fitGroups(bot, b * cap, cap, MAXS(), { nf: b, below }));
     const GT = groupLayout(top, a, 10, s);
     const GB = groupLayout(bot, b * cap, cap, s, { nf: b, below });
     return { top, bot, s, GT, GB, q, cap, rem: a % b };
@@ -1391,7 +1445,22 @@ ACTS.eq = {
       banner("Not quite. Let's see why! 👀", "soft");
       say("Not quite. Let's see why.");
     }
-    this.layoutSolved(true, true);
+    const hidden = this.A.concat(this.B).filter(sp => sp.hidden);
+    if (!hidden.length) return this.layoutSolved(true, true);
+    // Hard level: now the items pop in, then act it out.
+    E.labels = [];
+    this.layoutHardReveal();
+    const t = now(), st = Math.min(40, 600 / hidden.length);
+    hidden.forEach((sp, i) => { sp.hidden = false; sp.born = t + i * st; });
+    bump(t + hidden.length * st + POP_MS);
+    later(() => this.layoutSolved(true, true), hidden.length * st + 700);
+  },
+  // Show the items in their Easy-level spots, ready to act out the answer.
+  layoutHardReveal() {
+    const keep = this.level;
+    this.level = "easy";
+    this.layoutPre(false);
+    this.level = keep;
   },
   flip() {
     if (!this.solved || this.op !== "×") return;
