@@ -12,11 +12,13 @@
     --muted: #6b6878;
     --accent: #ff7a59;
     --accent-ink: #ffffff;
+    --good: #2fa866;
     --frame: #fde7c8;
     --frame-line: #f3c98f;
     --chip: #f4efe6;
     --chip-on: #2b2a33;
     --counted: #7bd389;
+    --hi: #ffb703;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -24,6 +26,7 @@
       --panel: #2a2933;
       --ink: #f4f2fa;
       --muted: #aaa6bb;
+      --good: #5fd394;
       --frame: #34323f;
       --frame-line: #4a475a;
       --chip: #34323f;
@@ -39,6 +42,7 @@
     display: flex;
     overflow: hidden;
   }
+  button { font-family: inherit; color: inherit; }
 
   /* ---------- Sidebar ---------- */
   aside {
@@ -46,16 +50,21 @@
     flex: none;
     background: var(--panel);
     box-shadow: 2px 0 10px rgba(0,0,0,.06);
-    padding: 16px 14px;
+    padding: 14px 14px 18px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 16px;
     z-index: 2;
   }
-  h1 { margin: 0; font-size: 22px; text-align: center; }
-  h2 { margin: 0 0 8px; font-size: 14px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
-  #num {
+  .home-btn {
+    height: 42px; border: none; border-radius: 12px;
+    background: var(--chip); font-size: 17px; font-weight: bold; cursor: pointer;
+  }
+  #actTitle { margin: 0; font-size: 22px; text-align: center; }
+  h2 { margin: 0 0 8px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  #actControls { display: flex; flex-direction: column; gap: 16px; }
+  .numbox {
     width: 100%;
     font-size: 44px;
     font-weight: bold;
@@ -67,9 +76,9 @@
     color: var(--ink);
     font-family: inherit;
   }
-  #num:focus { outline: none; border-color: var(--accent); }
-  #num::-webkit-inner-spin-button, #num::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-  #num { -moz-appearance: textfield; }
+  .numbox:focus, .tile:focus { outline: none; border-color: var(--accent); }
+  input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type=number] { -moz-appearance: textfield; }
   .steps { display: flex; gap: 10px; justify-content: center; margin-top: 10px; }
   .step {
     width: 56px; height: 56px;
@@ -82,7 +91,7 @@
     cursor: pointer;
     line-height: 1;
   }
-  .step:active, .chip:active, .grp:active { transform: scale(.92); }
+  .step:active, .chip:active, .grp:active, .pbtn:active, .pad button:active, .arrow:active, .equals:active { transform: scale(.92); }
   .chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(48px, 1fr)); gap: 8px; }
   .chip {
     font-size: 28px;
@@ -96,99 +105,220 @@
   .chip[aria-pressed="true"] { background: var(--chip-on); box-shadow: 0 0 0 3px var(--accent); }
   .groups { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .grp {
-    height: 46px;
+    min-height: 46px;
+    padding: 4px 6px;
     border-radius: 12px;
     border: none;
     background: var(--chip);
     color: var(--ink);
-    font-family: inherit;
     font-weight: bold;
-    font-size: 20px;
+    font-size: 19px;
     cursor: pointer;
   }
   .grp.mix { grid-column: 1 / -1; font-size: 18px; }
   .grp[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
-  .grp.move { width: 100%; font-size: 18px; }
+  .grp.wide { width: 100%; font-size: 18px; }
+  .grp.wide + .grp.wide { margin-top: 8px; }
+  .grp.go { background: var(--accent); color: var(--accent-ink); }
   .speed { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 20px; }
   .speed input { flex: 1; min-width: 0; accent-color: var(--accent); height: 28px; }
   .toggle { display: flex; align-items: center; gap: 8px; font-size: 17px; color: var(--muted); cursor: pointer; }
-  .toggle input { width: 20px; height: 20px; accent-color: var(--accent); }
+  .toggle input { width: 20px; height: 20px; accent-color: var(--accent); flex: none; }
+  .hint { margin: 8px 0 0; color: var(--muted); font-size: 14px; line-height: 1.35; }
 
-  /* ---------- Board ---------- */
+  /* ---------- Main area ---------- */
   main { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
-  .status {
-    flex: none;
+  .top { flex: none; display: flex; align-items: center; gap: 10px; padding: 10px 14px 4px; }
+  .prompt {
+    flex: 1; min-width: 0;
+    min-height: 44px;
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px 12px;
     text-align: center;
-    padding: 12px 16px;
     font-size: 22px;
+    line-height: 1.35;
   }
-  .status b { color: var(--accent); }
-  .status .tapped { color: var(--muted); font-size: 18px; }
+  .prompt b { color: var(--accent); }
+  .prompt .tapped { color: var(--muted); font-size: 18px; }
+  .prompt .line { width: 100%; }
+  .prompt .story { max-width: 780px; margin: 0 auto; }
+  .prompt .row { width: 100%; display: flex; flex-wrap: wrap; gap: 8px 12px; justify-content: center; align-items: center; }
+  .score { flex: none; font-size: 20px; font-weight: bold; white-space: nowrap; }
   #wrap { flex: 1; min-height: 0; position: relative; }
-  #board { position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer; touch-action: manipulation; }
+  #board { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: manipulation; cursor: pointer; }
+  .banner {
+    position: absolute; left: 50%; top: 10px;
+    transform: translate(-50%, 0) scale(.6);
+    opacity: 0; pointer-events: none;
+    background: var(--panel);
+    padding: 14px 26px; border-radius: 22px;
+    font-size: 34px; font-weight: bold; text-align: center;
+    box-shadow: 0 10px 34px rgba(0,0,0,.18);
+    transition: opacity .25s, transform .35s cubic-bezier(.3,1.6,.6,1);
+    max-width: 92%;
+  }
+  .banner.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  .banner.good { color: var(--good); }
+  .banner.soft { color: var(--accent); }
 
-  /* Phones: slimmer sidebar */
+  /* Prompt buttons and equation tiles */
+  .pbtn {
+    min-height: 50px; padding: 0 20px;
+    border-radius: 14px; border: none;
+    background: var(--chip); color: var(--ink);
+    font-size: 22px; font-weight: bold; cursor: pointer;
+  }
+  .pbtn.go { background: var(--accent); color: var(--accent-ink); }
+  .eq { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .num { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .arrow {
+    width: 70px; height: 32px; border: none; border-radius: 10px;
+    background: var(--chip); font-size: 17px; cursor: pointer;
+  }
+  .tile {
+    min-width: 84px; height: 64px; padding: 0 8px;
+    font-size: 38px; font-weight: bold; text-align: center;
+    border-radius: 14px; border: 3px solid var(--frame-line);
+    background: var(--bg); color: var(--ink); font-family: inherit;
+    display: inline-flex; align-items: center; justify-content: center; flex-direction: column; line-height: 1;
+  }
+  input.tile { width: 84px; }
+  .tile.a { border-color: #ff7a59; }
+  .tile.b { border-color: #4fa3ff; }
+  .tile small { font-size: 13px; font-weight: normal; color: var(--muted); margin-top: 2px; }
+  .opsign { font-size: 40px; font-weight: bold; }
+  .equals {
+    width: 64px; height: 64px; border-radius: 50%; border: none;
+    background: var(--accent); color: var(--accent-ink);
+    font-size: 40px; font-weight: bold; cursor: pointer; line-height: 1;
+  }
+  .seq { font-weight: bold; color: var(--accent); }
+
+  /* Number pad */
+  .pad {
+    flex: none;
+    display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+    gap: 8px; padding: 10px 12px 14px;
+    background: var(--panel); box-shadow: 0 -2px 10px rgba(0,0,0,.06);
+  }
+  .pad[hidden] { display: none; }
+  .pad.off button { opacity: .4; pointer-events: none; }
+  .pad .shown {
+    min-width: 110px; height: 56px; padding: 0 12px;
+    border-radius: 14px; border: 3px solid var(--frame-line);
+    font-size: 34px; font-weight: bold;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg);
+  }
+  .pad button {
+    width: 56px; height: 56px; border-radius: 14px; border: none;
+    background: var(--chip); font-size: 26px; font-weight: bold; cursor: pointer;
+  }
+  .pad .ok { width: 84px; background: var(--good); color: #fff; }
+
+  /* Home screen */
+  .home {
+    position: fixed; inset: 0; z-index: 10;
+    background: var(--bg); overflow-y: auto;
+    padding: 24px 16px 32px;
+  }
+  .home[hidden] { display: none; }
+  .home h1 { text-align: center; font-size: 36px; margin: 4px 0 6px; }
+  .home p.sub { text-align: center; color: var(--muted); font-size: 18px; margin: 0 0 22px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; max-width: 1040px; margin: 0 auto; }
+  .card {
+    background: var(--panel); border: none; border-radius: 20px;
+    padding: 18px; text-align: left; cursor: pointer;
+    box-shadow: 0 3px 12px rgba(0,0,0,.07);
+    transition: transform .15s;
+  }
+  .card:hover { transform: translateY(-3px); }
+  .card .ic { font-size: 46px; line-height: 1; }
+  .card .t { font-size: 22px; font-weight: bold; margin: 10px 0 4px; }
+  .card .d { color: var(--muted); font-size: 15px; line-height: 1.35; }
+
+  /* Phones */
   @media (max-width: 600px) {
-    aside { width: 132px; padding: 12px 8px; gap: 14px; }
-    h1 { font-size: 16px; }
+    aside { width: 132px; padding: 10px 8px 14px; gap: 12px; }
+    #actControls { gap: 12px; }
+    .home-btn { font-size: 13px; height: 38px; }
+    #actTitle { font-size: 16px; }
     h2 { font-size: 11px; }
-    #num { font-size: 26px; border-radius: 12px; padding: 4px 2px; }
+    .numbox { font-size: 26px; border-radius: 12px; padding: 4px 2px; }
     .step { width: 46px; height: 46px; font-size: 26px; }
     .steps { gap: 8px; }
     .chips { grid-template-columns: repeat(2, 1fr); gap: 6px; }
     .chip { height: 48px; font-size: 26px; }
-    .groups { grid-template-columns: repeat(2, 1fr); gap: 6px; }
-    .grp { height: 42px; font-size: 18px; }
-    .grp.mix { font-size: 15px; }
+    .groups { grid-template-columns: repeat(2, 1fr) !important; gap: 6px; }
+    .grp { min-height: 42px; font-size: 16px; }
+    .grp.mix, .grp.wide { font-size: 14px; }
     .toggle { font-size: 14px; }
-    .grp.move { font-size: 15px; }
-    .speed { font-size: 15px; gap: 2px; }
-    .status { font-size: 17px; padding: 10px 8px; }
+    .hint { font-size: 12px; }
+    .top { padding: 8px 8px 2px; gap: 6px; }
+    .prompt { font-size: 16px; gap: 6px 8px; }
+    .score { font-size: 15px; }
+    .pbtn { min-height: 42px; padding: 0 12px; font-size: 16px; }
+    .arrow { width: 48px; height: 26px; font-size: 13px; }
+    .tile { min-width: 44px; height: 44px; font-size: 22px; border-radius: 10px; border-width: 2px; padding: 0 4px; }
+    input.tile { width: 44px; }
+    .arrow { width: 44px; }
+    .opsign { font-size: 20px; }
+    .equals { width: 38px; height: 38px; font-size: 24px; }
+    .eq { gap: 4px; }
+    .pad { gap: 6px; padding: 8px 6px 10px; }
+    .pad .shown { min-width: 80px; height: 46px; font-size: 26px; }
+    .pad button { width: 44px; height: 46px; font-size: 22px; }
+    .pad .ok { width: 60px; }
+    .banner { font-size: 22px; padding: 10px 16px; }
+    .home h1 { font-size: 26px; }
+    .cards { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .card { padding: 12px; }
+    .card .ic { font-size: 34px; }
+    .card .t { font-size: 17px; }
+    .card .d { font-size: 13px; }
   }
 </style>
 </head>
 <body>
 <aside>
-  <h1>Count With Me</h1>
-  <section>
-    <h2><label for="num">Number</label></h2>
-    <input id="num" type="number" inputmode="numeric" min="0" max="10000" value="7">
-    <div class="steps">
-      <button class="step" id="minus" aria-label="One less">−</button>
-      <button class="step" id="plus" aria-label="One more">+</button>
-    </div>
-  </section>
+  <button class="home-btn" id="homeBtn">🏠 All activities</button>
+  <h1 id="actTitle">Count</h1>
+  <div id="actControls"></div>
   <section>
     <h2>Things</h2>
     <div class="chips" id="chips" role="group" aria-label="Choose what to count"></div>
   </section>
-  <section>
-    <h2>Make groups of</h2>
-    <div class="groups" id="groups" role="group" aria-label="Arrange"></div>
-  </section>
-  <section>
-    <h2>Move</h2>
-    <button class="grp move" id="move" aria-pressed="false">▶ Move</button>
-    <div class="speed">
-      <span aria-hidden="true">🐢</span>
-      <input type="range" id="speed" min="1" max="10" value="4" aria-label="Speed">
-      <span aria-hidden="true">🐇</span>
-    </div>
-  </section>
-  <label class="toggle"><input type="checkbox" id="speak"> Count out loud</label>
+  <label class="toggle"><input type="checkbox" id="speak"> Talk out loud</label>
 </aside>
-<main id="main">
-  <div class="status" id="status"></div>
-  <div id="wrap"><canvas id="board" aria-label="Counting board"></canvas></div>
+<main>
+  <div class="top">
+    <div class="prompt" id="prompt" aria-live="polite"></div>
+    <div class="score" id="score" title="Stars earned">⭐ 0</div>
+  </div>
+  <div id="wrap">
+    <canvas id="board" aria-label="Board"></canvas>
+    <div class="banner" id="banner" aria-live="assertive"></div>
+  </div>
+  <div class="pad" id="pad" hidden></div>
 </main>
-<script>
-// Count With Me — everything is drawn on one <canvas> so even 10,000 items stay smooth.
+<div class="home" id="home">
+  <h1>Count With Me</h1>
+  <p class="sub">Pick something to play!</p>
+  <div class="cards" id="cards"></div>
+</div>
 
-const MAX = 10000;
-const MAX_SIZE = () => (innerWidth <= 600 ? 34 : 46);   // items never get bigger than this
-const PAD = 12;                                           // space around the board edge
-const MOVE_MS = 700;                                      // slide time when rearranging
-const POP_MS = 300;                                       // pop-in time for each new item
+<script>
+"use strict";
+/* =====================================================================
+   Basics
+   ===================================================================== */
+const $ = id => document.getElementById(id);
+// Largest item size. Count keeps small items so huge numbers fit; the games use bigger ones.
+let bigItems = false;
+const MAXS = () => (innerWidth <= 600 ? (bigItems ? 46 : 34) : (bigItems ? 74 : 46));
+const PAD = 14;                                      // board margin
+const MOVE_MS = 700;                                 // slide time
+const POP_MS = 300;                                  // pop-in time
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const ITEMS = [
@@ -203,332 +333,201 @@ const ITEMS = [
   { label: "Fish", one: "fish", emoji: "🐠" },
   { label: "Hearts", one: "heart", emoji: "💖" },
 ];
-// Group size -> [columns, rows] of each group's box
 const GROUPS = { 2: [2, 1], 3: [3, 1], 4: [2, 2], 5: [5, 1], 10: [5, 2], 100: [10, 10] };
-const DOT_COLORS = ["#ff7a59", "#4fa3ff", "#7bd389", "#ffcc4d", "#b48cff"];
-
-const $ = id => document.getElementById(id);
-const numEl = $("num"), statusEl = $("status"), canvas = $("board"), wrap = $("wrap");
-const ctx = canvas.getContext("2d");
+const PALETTE = ["#ff7a59", "#4fa3ff", "#7bd389", "#ffcc4d", "#b48cff", "#ff8fc7", "#4dd0c4", "#ffa94d"];
+const TINT_A = "#ff7a59", TINT_B = "#4fa3ff", TINT_OFF = "#9e9ab0";
 
 let item = ITEMS[0];
-let mode = 0;              // 0 = scattered, otherwise the group size
-let items = [];            // {slot, jx, jy, born, counted, x0, y0, x1, y1}
-let frames = [];           // group boxes: {x, y, w, h, c, r}
-let used = new Set();      // scatter slots in use
-let gCols = 0, gRows = 0;  // scatter grid
-let W = 0, H = 0, dpr = 1; // board size in CSS pixels
-let S = 46, S0 = 46;       // item size now / before the current slide
-let moveStart = -1e9, framesStart = -1e9, lastBorn = -1e9;
-let tapped = 0;
-let raf = 0;
-let moving = false, lastTick = 0;
+const rand = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const clamp01 = x => (x < 0 ? 0 : x > 1 ? 1 : x);
+const ease = t => (t <= 0 ? 0 : t >= 1 ? 1 : t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+const now = () => performance.now();
+const P = () => item.label.toLowerCase();          // "puppies"
+const word = n => (n === 1 ? item.one : P());       // "puppy" / "puppies"
+const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 
-/* ---------------- Sidebar controls ---------------- */
-for (const it of ITEMS) {
-  const b = document.createElement("button");
-  b.className = "chip";
-  b.title = it.label;
-  b.setAttribute("aria-label", it.label);
-  b.setAttribute("aria-pressed", it === item);
-  if (it.emoji) b.textContent = it.emoji;
-  else {
-    const c = document.createElement("canvas");
-    c.width = c.height = 64;
-    c.style.width = c.style.height = "30px";
-    drawShape(c.getContext("2d"), it, 64, DOT_COLORS[1]);
-    b.appendChild(c);
-  }
-  b.onclick = () => {
-    item = it;
-    document.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", c === b));
-    sprites.clear();
-    updateStatus();
-    kick();
-    numEl.focus();
-    numEl.select();
+/* =====================================================================
+   Board engine: one canvas, with sprites (items), frames (boxes),
+   labels (text) and confetti. Everything animates from here.
+   ===================================================================== */
+const canvas = $("board"), ctx = canvas.getContext("2d"), wrap = $("wrap");
+if (!ctx.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+    r = Math.min(r, w / 2, h / 2);
+    this.moveTo(x + r, y); this.arcTo(x + w, y, x + w, y + h, r); this.arcTo(x + w, y + h, x, y + h, r);
+    this.arcTo(x, y + h, x, y, r); this.arcTo(x, y, x + w, y, r); this.closePath();
   };
-  $("chips").appendChild(b);
+}
+const E = { W: 0, H: 0, dpr: 1, S: 46, sprites: [], frames: [], labels: [], parts: [], until: 0, moving: false, veil: null, timers: [] };
+let speedFn = () => 4;
+
+function bump(t) { if (t > E.until) E.until = t; kick(); }
+function later(fn, ms) {
+  const id = setTimeout(() => { E.timers = E.timers.filter(x => x !== id); fn(); }, ms);
+  E.timers.push(id);
+  return id;
+}
+function clearBoard() {
+  E.timers.forEach(clearTimeout);
+  E.timers = []; E.sprites = []; E.frames = []; E.labels = []; E.parts = [];
+  E.moving = false; E.veil = null;
+  clearTimeout(bannerTimer);
+  $("banner").className = "banner";
+  kick();
 }
 
-const mixBtn = document.createElement("button");
-mixBtn.className = "grp mix";
-mixBtn.textContent = "🔀 Mix them up";
-mixBtn.onclick = () => { stopMoving(); mode = 0; markMode(); reshuffle(); relayout(true); updateStatus(); };
-$("groups").appendChild(mixBtn);
-for (const g of Object.keys(GROUPS).map(Number)) {
-  const b = document.createElement("button");
-  b.className = "grp";
-  b.dataset.g = g;
-  b.textContent = g;
-  b.setAttribute("aria-label", "Groups of " + g);
-  b.onclick = () => { stopMoving(); mode = g; markMode(); relayout(true); updateStatus(); };
-  $("groups").appendChild(b);
+// --- sprites ---
+function sprite(x, y, o = {}) {
+  const sp = Object.assign({ fx: x, fy: y, tx: x, ty: y, t0: 0, dur: 1 }, o);
+  sp.born = now() + (o.delay || 0);
+  delete sp.delay;
+  E.sprites.push(sp);
+  bump(sp.born + POP_MS);
+  return sp;
 }
-/* ---------------- Moving around ---------------- */
-const moveBtn = $("move"), speedEl = $("speed");
-moveBtn.onclick = () => (moving ? stopMoving() : startMoving());
-
-function startMoving() {
-  const now = performance.now();
-  const e = ease((now - moveStart) / MOVE_MS);
-  S0 = S;   // finish any size change straight away
-  for (const it of items) {
-    it.mx = it.x0 + (it.x1 - it.x0) * e;
-    it.my = it.y0 + (it.y1 - it.y0) * e;
-    giveVelocity(it);
+function posAt(sp, t) {
+  if (sp.mx !== undefined) return { x: sp.mx, y: sp.my };
+  const e = ease((t - sp.t0) / sp.dur);
+  return { x: sp.fx + (sp.tx - sp.fx) * e, y: sp.fy + (sp.ty - sp.fy) * e };
+}
+function moveTo(sp, x, y, delay = 0, dur = MOVE_MS) {
+  if (reduceMotion || dur === 0) { sp.fx = sp.tx = x; sp.fy = sp.ty = y; sp.t0 = 0; sp.dur = 1; kick(); return; }
+  const t = now(), p = posAt(sp, t);
+  sp.fx = p.x; sp.fy = p.y; sp.tx = x; sp.ty = y; sp.t0 = t + delay; sp.dur = dur;
+  bump(sp.t0 + dur);
+}
+function leave(sp, x, y, delay = 0, dur = 900) {
+  moveTo(sp, x, y, delay, dur);
+  sp.die = now() + delay + (reduceMotion ? 0 : dur);
+  bump(sp.die);
+}
+function pulse(sp, delay = 0) { sp.pulseAt = now() + delay; bump(sp.pulseAt + 360); }
+function removeSprites(list) {
+  const dead = new Set(list);
+  E.sprites = E.sprites.filter(s => !dead.has(s));
+}
+function hitSprite(x, y, filter) {
+  const s = E.S, slack = Math.max(0, (18 - s) / 2), t = now();
+  for (let i = E.sprites.length - 1; i >= 0; i--) {
+    const sp = E.sprites[i];
+    if (sp.die || (filter && !filter(sp))) continue;
+    const p = posAt(sp, t);
+    if (x >= p.x - slack && x <= p.x + s + slack && y >= p.y - slack && y <= p.y + s + slack) return sp;
   }
-  if (mode !== 0) { mode = 0; markMode(); updateStatus(); }
-  frames = [];
-  moving = true;
-  lastTick = now;
-  moveBtn.textContent = "⏸ Stop";
-  moveBtn.setAttribute("aria-pressed", "true");
+  return null;
+}
+
+// --- frames & labels ---
+function frame(o) {
+  const f = Object.assign({}, o);
+  f.born = o.delay !== undefined ? now() + o.delay : 0;   // only fade in when a delay is given
+  E.frames.push(f);
+  if (f.born) bump(f.born + 400);
+  return f;
+}
+function label(o) {
+  const l = Object.assign({}, o);
+  l.born = o.delay !== undefined ? now() + o.delay : 0;
+  E.labels.push(l);
+  if (l.born) bump(l.born + 350);
+  return l;
+}
+
+// --- hiding everything for a moment (Quick look, Guess) ---
+function veil(hide) { E.veil = { hide, t0: now() }; bump(now() + 400); }
+function veilAlpha(t) {
+  if (!E.veil) return 1;
+  const p = reduceMotion ? 1 : clamp01((t - E.veil.t0) / 350);
+  return E.veil.hide ? 1 - p : p;
+}
+
+// --- wandering around (Move) ---
+function startMoving(rect) {
+  E.moveRect = rect || null;
+  const t = now();
+  for (const sp of E.sprites) {
+    if (sp.die) continue;
+    const p = posAt(sp, t);
+    sp.mx = p.x; sp.my = p.y;
+    giveVelocity(sp);
+  }
+  E.moving = true;
   kick();
 }
 function stopMoving() {
-  if (!moving) return;
-  moving = false;
-  // Everything stays where it stopped; the next rearrange slides from here.
-  for (const it of items) {
-    if (it.mx === undefined) continue;
-    it.x0 = it.x1 = it.mx;
-    it.y0 = it.y1 = it.my;
-    it.mx = it.my = undefined;
+  if (!E.moving) return;
+  E.moving = false;
+  for (const sp of E.sprites) {
+    if (sp.mx === undefined) continue;
+    sp.fx = sp.tx = sp.mx; sp.fy = sp.ty = sp.my; sp.t0 = 0; sp.dur = 1;
+    sp.mx = sp.my = undefined;
   }
-  moveStart = -1e9;
-  moveBtn.textContent = "▶ Move";
-  moveBtn.setAttribute("aria-pressed", "false");
   kick();
 }
-function giveVelocity(it) {
+function giveVelocity(sp) {
   const a = Math.random() * Math.PI * 2, f = 0.6 + Math.random() * 0.8;
-  it.vx = Math.cos(a) * f;
-  it.vy = Math.sin(a) * f;
+  sp.vx = Math.cos(a) * f; sp.vy = Math.sin(a) * f;
 }
-// Move every item a little and bounce it off the board edges.
-function step(dt) {
-  const v = speedEl.value * 25 * dt / 1000;   // pixels this frame
-  const maxX = W - PAD - S, maxY = H - PAD - S;
-  for (const it of items) {
-    if (it.mx === undefined) { it.mx = it.x1; it.my = it.y1; giveVelocity(it); }
-    it.mx += it.vx * v;
-    it.my += it.vy * v;
-    if (it.mx < PAD) { it.mx = PAD; it.vx = Math.abs(it.vx); }
-    else if (it.mx > maxX) { it.mx = maxX; it.vx = -Math.abs(it.vx); }
-    if (it.my < PAD) { it.my = PAD; it.vy = Math.abs(it.vy); }
-    else if (it.my > maxY) { it.my = maxY; it.vy = -Math.abs(it.vy); }
+function stepMoving(dt) {
+  const v = speedFn() * 25 * dt / 1000;
+  const r = E.moveRect || board();
+  const maxX = r.x + r.w - E.S, maxY = r.y + r.h - E.S;
+  for (const sp of E.sprites) {
+    if (sp.die) continue;
+    if (sp.mx === undefined) { const p = posAt(sp, now()); sp.mx = p.x; sp.my = p.y; giveVelocity(sp); }
+    sp.mx += sp.vx * v; sp.my += sp.vy * v;
+    if (sp.mx < r.x) { sp.mx = r.x; sp.vx = Math.abs(sp.vx); } else if (sp.mx > maxX) { sp.mx = maxX; sp.vx = -Math.abs(sp.vx); }
+    if (sp.my < r.y) { sp.my = r.y; sp.vy = Math.abs(sp.vy); } else if (sp.my > maxY) { sp.my = maxY; sp.vy = -Math.abs(sp.vy); }
   }
 }
 
-function markMode() {
-  document.querySelectorAll(".grp").forEach(b =>
-    b.setAttribute("aria-pressed", b === mixBtn ? mode === 0 : +b.dataset.g === mode));
-}
-
-function getN() {
-  const n = parseInt(numEl.value, 10);
-  return isNaN(n) || n < 0 ? 0 : Math.min(n, MAX);
-}
-$("minus").onclick = () => { numEl.value = Math.max(0, getN() - 1); setCount(getN()); say(getN()); };
-$("plus").onclick = () => { numEl.value = Math.min(MAX, getN() + 1); setCount(getN()); say(getN()); };
-
-let typeTimer;
-numEl.addEventListener("input", () => {
-  if (numEl.value !== "" && getN() !== +numEl.value) numEl.value = getN();
-  if (mode !== 0) { mode = 0; markMode(); }   // a newly typed number starts scattered
-  setCount(getN());
-  clearTimeout(typeTimer);
-  typeTimer = setTimeout(() => countAloud(getN()), 700);
-});
-numEl.addEventListener("keydown", e => { if (e.key === "Enter") numEl.blur(); });
-$("speak").onchange = () => { if (!$("speak").checked) stopSpeaking(); };
-
-// Tap an item to mark it as counted.
-canvas.addEventListener("click", e => {
-  const r = canvas.getBoundingClientRect();
-  const x = e.clientX - r.left, y = e.clientY - r.top;
-  const slack = Math.max(0, (14 - S) / 2);   // easier to hit tiny items
-  for (let i = items.length - 1; i >= 0; i--) {
-    const it = items[i];
-    const ix = moving ? it.mx : it.x1, iy = moving ? it.my : it.y1;
-    if (ix === undefined) continue;
-    if (x >= ix - slack && x <= ix + S + slack && y >= iy - slack && y <= iy + S + slack) {
-      it.counted = !it.counted;
-      tapped += it.counted ? 1 : -1;
-      updateStatus();
-      kick();
-      return;
-    }
-  }
-});
-
-new ResizeObserver(() => { if (resizeCanvas()) relayout(false); }).observe(wrap);
-
-/* ---------------- Sizing ---------------- */
-function resizeCanvas() {
-  const w = wrap.clientWidth, h = wrap.clientHeight, d = devicePixelRatio || 1;
-  if (w === W && h === H && d === dpr) return false;
-  W = w; H = h; dpr = d;
-  canvas.width = Math.round(W * dpr);
-  canvas.height = Math.round(H * dpr);
-  sprites.clear();
-  return true;
-}
-
-// Scattered items get extra room so it looks scattered rather than packed.
-const spread = n => 1.35 + 0.85 * Math.exp(-n / 300);
-const groupDims = s => ({ pad: Math.max(1, s * 0.13), gap: Math.max(2, s * 0.3), bw: Math.max(1, s * 0.05) });
-
-function fitScatter(n, top) {
-  const need = Math.ceil(n * spread(n));
-  for (let s = top; s > 2; s -= 0.25) {
-    const cell = s * 1.3;
-    if (Math.floor((W - 2 * PAD) / cell) * Math.floor((H - 2 * PAD) / cell) >= need) return s;
-  }
-  return 2;
-}
-function fitGroups(n, g, top) {
-  const [c, r] = GROUPS[g], nf = Math.ceil(n / g);
-  for (let s = top; s > 2; s -= 0.25) {
-    const { pad, gap, bw } = groupDims(s);
-    const fw = c * s + 2 * (pad + bw), fh = r * s + 2 * (pad + bw);
-    const perRow = Math.floor((W - 2 * PAD + gap) / (fw + gap));
-    if (perRow < 1) continue;
-    if (Math.ceil(nf / perRow) * (fh + gap) - gap <= H - 2 * PAD) return s;
-  }
-  return 2;
-}
-// Full size until the items would no longer fit on screen; only then shrink.
-function chooseSize(n) {
-  let s = fitScatter(n, MAX_SIZE());
-  if (mode) s = Math.min(s, fitGroups(n, mode, s));
-  return s;
-}
-
-/* ---------------- Scatter grid ---------------- */
-function setGrid(s) {
-  const cell = s * 1.3;
-  const cols = Math.max(1, Math.floor((W - 2 * PAD) / cell));
-  const rows = Math.max(1, Math.floor((H - 2 * PAD) / cell));
-  if (cols === gCols && rows === gRows) return;
-  const oc = gCols, or = gRows;
-  gCols = cols; gRows = rows;
-  // Move each item to the matching spot in the new grid, so the picture keeps its shape.
-  used.clear();
-  for (const it of items) {
-    if (!oc) { it.slot = takeSlot(); continue; }
-    const r = Math.min(rows - 1, Math.floor((Math.floor(it.slot / oc) + 0.5) * rows / or));
-    const c = Math.min(cols - 1, Math.floor(((it.slot % oc) + 0.5) * cols / oc));
-    const want = r * cols + c;
-    if (!used.has(want)) { used.add(want); it.slot = want; } else it.slot = takeSlot();
-  }
-}
-function takeSlot() {
-  const total = gCols * gRows;
-  for (let t = 0; t < 50; t++) {
-    const s = Math.floor(Math.random() * total);
-    if (!used.has(s)) { used.add(s); return s; }
-  }
-  for (let s = 0; s < total; s++) if (!used.has(s)) { used.add(s); return s; }
-  return 0;
-}
-function reshuffle() {
-  used.clear();
-  for (const it of items) { it.slot = takeSlot(); it.jx = Math.random(); it.jy = Math.random(); }
-}
-
-/* ---------------- Count changes ---------------- */
-function setCount(n) {
-  resizeCanvas();
-  const now = performance.now();
-  while (items.length > n) {
-    const it = items.pop();
-    used.delete(it.slot);
-    if (it.counted) tapped--;
-  }
-  const add = n - items.length;
-  // New items pop in one after another, all within about a second.
-  const step = reduceMotion ? 0 : Math.min(60, 900 / Math.max(1, add));
-  const s = chooseSize(n);
-  setGrid(s);
-  for (let k = 0; k < add; k++) {
-    const it = { slot: takeSlot(), jx: Math.random(), jy: Math.random(), born: now + k * step, counted: false, isNew: true };
-    items.push(it);
-  }
-  lastBorn = now + add * step;
-  relayout(true);
-  updateStatus();
-}
-
-/* ---------------- Layout ---------------- */
-const ease = t => (t <= 0 ? 0 : t >= 1 ? 1 : t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
-
-function relayout(animate) {
-  if (!W || !H) return;
-  const now = performance.now();
-  const e = ease((now - moveStart) / MOVE_MS);
-  const curS = S0 + (S - S0) * e;
-  const newS = chooseSize(items.length);
-  setGrid(newS);
-
-  // Remember where everything is right now, so it can slide from there.
-  for (const it of items) {
-    if (it.x1 === undefined) continue;
-    it.x0 = it.x0 + (it.x1 - it.x0) * e;
-    it.y0 = it.y0 + (it.y1 - it.y0) * e;
-  }
-
-  frames = [];
-  if (mode === 0) {
-    const cell = newS * 1.3;
-    const offX = PAD + (W - 2 * PAD - gCols * cell) / 2;
-    const offY = PAD + (H - 2 * PAD - gRows * cell) / 2;
-    for (const it of items) {
-      it.x1 = offX + (it.slot % gCols) * cell + it.jx * (cell - newS);
-      it.y1 = offY + Math.floor(it.slot / gCols) * cell + it.jy * (cell - newS);
-    }
-  } else {
-    const [c, r] = GROUPS[mode];
-    const { pad, gap, bw } = groupDims(newS);
-    const fw = c * newS + 2 * (pad + bw), fh = r * newS + 2 * (pad + bw);
-    const perRow = Math.max(1, Math.floor((W - 2 * PAD + gap) / (fw + gap)));
-    const rowW = perRow * (fw + gap) - gap;
-    const offX = PAD + Math.max(0, (W - 2 * PAD - rowW) / 2);
-    const nf = Math.ceil(items.length / mode);
-    for (let k = 0; k < nf; k++) {
-      frames.push({ x: offX + (k % perRow) * (fw + gap), y: PAD + Math.floor(k / perRow) * (fh + gap), w: fw, h: fh, c, r, pad, bw });
-    }
-    items.forEach((it, i) => {
-      const f = frames[Math.floor(i / mode)], j = i % mode;
-      it.x1 = f.x + bw + pad + (j % c) * newS;
-      it.y1 = f.y + bw + pad + Math.floor(j / c) * newS;
+// --- confetti ---
+function confetti() {
+  if (reduceMotion) return;
+  for (let i = 0; i < 90; i++) {
+    E.parts.push({
+      x: Math.random() * E.W, y: -10 - Math.random() * E.H * 0.3,
+      vx: (Math.random() - .5) * .25, vy: .12 + Math.random() * .25,
+      r: Math.random() * 6, vr: (Math.random() - .5) * .02,
+      c: pick(PALETTE), w: 7 + Math.random() * 6, life: 2400,
     });
   }
-
-  const slide = animate && !reduceMotion;
-  for (const it of items) {
-    if (it.isNew || !slide) { it.x0 = it.x1; it.y0 = it.y1; it.isNew = false; }
-  }
-  S0 = slide ? curS : newS;
-  S = newS;
-  moveStart = now;
-  framesStart = slide ? now : -1e9;
-  if (moving) { frames = []; S0 = S; }
   kick();
 }
+function stepParts(dt) {
+  for (const p of E.parts) { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += .0004 * dt; p.r += p.vr * dt; p.life -= dt; }
+  E.parts = E.parts.filter(p => p.life > 0 && p.y < E.H + 20);
+}
 
-/* ---------------- Drawing ---------------- */
-const sprites = new Map();
-function sprite(color) {
-  const px = Math.max(1, Math.round(S * dpr));
-  const key = color + px;
-  let c = sprites.get(key);
+// --- sizing ---
+function resizeCanvas() {
+  const w = wrap.clientWidth, h = wrap.clientHeight, d = devicePixelRatio || 1;
+  if (w === E.W && h === E.H && d === E.dpr) return false;
+  E.W = w; E.H = h; E.dpr = d;
+  canvas.width = Math.round(w * d);
+  canvas.height = Math.round(h * d);
+  imgCache.clear();
+  return true;
+}
+function board() { return { x: PAD, y: PAD, w: Math.max(20, E.W - 2 * PAD), h: Math.max(20, E.H - 2 * PAD) }; }
+function shrink(r, { top = 0, bottom = 0, left = 0, right = 0 } = {}) {
+  return { x: r.x + left, y: r.y + top, w: Math.max(20, r.w - left - right), h: Math.max(20, r.h - top - bottom) };
+}
+
+// --- item pictures ---
+const imgCache = new Map();
+function spriteImg(color) {
+  const px = Math.max(1, Math.round(E.S * E.dpr));
+  const key = item.label + color + px;
+  let c = imgCache.get(key);
   if (!c) {
+    if (imgCache.size > 300) imgCache.clear();
     c = document.createElement("canvas");
     c.width = c.height = px;
     drawShape(c.getContext("2d"), item, px, color);
-    sprites.set(key, c);
+    imgCache.set(key, c);
   }
   return c;
 }
@@ -540,7 +539,7 @@ function drawShape(g, it, px, color) {
     g.textBaseline = "middle";
     g.fillText(it.emoji, m, m + px * 0.05);
   } else if (it.dot) {
-    g.fillStyle = color;
+    g.fillStyle = color || PALETTE[1];
     g.beginPath(); g.arc(m, m, px * 0.4, 0, 7); g.fill();
   } else if (it.beach) {
     const cols = ["#ff5a5f", "#fff", "#2f9bff", "#fff", "#ffd23f", "#fff"], rad = px * 0.42;
@@ -557,114 +556,1349 @@ function drawShape(g, it, px, color) {
   }
 }
 
-const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+// --- drawing ---
+function rr(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect(x, y, w, h, Math.max(0, r)); }
+const FONT = '"Trebuchet MS","Avenir Next",system-ui,sans-serif';
 
-function draw(now) {
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.clearRect(0, 0, W, H);
-  const e = ease((now - moveStart) / MOVE_MS);
-  const curS = S0 + (S - S0) * e;
+function draw(t) {
+  ctx.setTransform(E.dpr, 0, 0, E.dpr, 0, 0);
+  ctx.clearRect(0, 0, E.W, E.H);
+  const cFrame = css("--frame"), cLine = css("--frame-line"), cInk = css("--ink"), cMuted = css("--muted");
+  const cAccent = css("--accent"), cCounted = css("--counted"), cHi = css("--hi");
+  const va = veilAlpha(t);
+  const s = E.S;
 
-  // Group boxes
-  if (frames.length) {
-    ctx.globalAlpha = Math.min(1, Math.max(0, (now - framesStart) / 400));
-    const fill = css("--frame"), line = css("--frame-line");
-    for (const f of frames) {
-      ctx.fillStyle = fill;
-      ctx.strokeStyle = line;
-      ctx.lineWidth = f.bw * 2;
+  // boxes
+  for (const f of E.frames) {
+    const a = (f.born ? clamp01((t - f.born) / 350) : 1) * (f.alpha ?? 1) * (f.noVeil ? 1 : va);
+    if (a <= 0) continue;
+    ctx.globalAlpha = a;
+    const bw = f.bw || 2;
+    rr(f.x + bw / 2, f.y + bw / 2, f.w - bw, f.h - bw, f.radius ?? Math.max(4, s * 0.22));
+    if (f.fill !== null) { ctx.fillStyle = f.fill || cFrame; ctx.fill(); }
+    ctx.lineWidth = f.hi ? Math.max(3, bw * 2) : bw;
+    ctx.strokeStyle = f.hi ? cAccent : (f.stroke || cLine);
+    if (f.dashed) ctx.setLineDash([8, 6]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    const c = f.cells;
+    if (c && c.s >= 6) {
+      ctx.lineWidth = 1; ctx.strokeStyle = cLine;
       ctx.beginPath();
-      ctx.roundRect(f.x + f.bw, f.y + f.bw, f.w - 2 * f.bw, f.h - 2 * f.bw, Math.max(2, S * 0.2));
-      ctx.fill(); ctx.stroke();
-      if (S >= 6) {   // cell lines, skipped when tiny
-        const ix = f.x + f.bw + f.pad, iy = f.y + f.bw + f.pad;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        for (let k = 0; k <= f.c; k++) { ctx.moveTo(ix + k * S, iy); ctx.lineTo(ix + k * S, iy + f.r * S); }
-        for (let k = 0; k <= f.r; k++) { ctx.moveTo(ix, iy + k * S); ctx.lineTo(ix + f.c * S, iy + k * S); }
-        ctx.stroke();
-      }
+      for (let k = 0; k <= c.c; k++) { ctx.moveTo(c.ox + k * c.s, c.oy); ctx.lineTo(c.ox + k * c.s, c.oy + c.r * c.s); }
+      for (let k = 0; k <= c.r; k++) { ctx.moveTo(c.ox, c.oy + k * c.s); ctx.lineTo(c.ox + c.c * c.s, c.oy + k * c.s); }
+      ctx.stroke();
     }
-    ctx.globalAlpha = 1;
   }
 
-  // Items
-  const counted = css("--counted");
-  const plain = item.dot ? null : sprite("");
-  for (let i = 0; i < items.length; i++) {
-    const it = items[i];
-    const p = reduceMotion ? 1 : (now - it.born) / POP_MS;
-    if (p <= 0) continue;
-    const sc = p >= 1 ? 1 : 1 + 2.7 * Math.pow(p - 1, 3) + 1.7 * Math.pow(p - 1, 2);   // pop with a little bounce
-    const x = moving ? it.mx : it.x0 + (it.x1 - it.x0) * e;
-    const y = moving ? it.my : it.y0 + (it.y1 - it.y0) * e;
-    const z = curS * sc, off = (curS - z) / 2;
-    if (it.counted) {
-      ctx.fillStyle = counted;
-      ctx.beginPath(); ctx.roundRect(x, y, curS, curS, curS * 0.3); ctx.fill();
-    }
-    const img = plain || sprite(DOT_COLORS[(mode ? Math.floor(i / mode) : i) % DOT_COLORS.length]);
-    ctx.drawImage(img, x + off, y + off, z, z);
+  // text
+  ctx.textBaseline = "middle";
+  for (const l of E.labels) {
+    const a = l.born ? clamp01((t - l.born) / 300) : 1;
+    if (a <= 0) continue;
+    ctx.globalAlpha = a;
+    ctx.font = `bold ${l.size || 24}px ${FONT}`;
+    ctx.fillStyle = l.color || cInk;
+    ctx.textAlign = l.align || "center";
+    ctx.fillText(l.text, l.x, l.y);
   }
+
+  // items
+  const plain = item.dot ? null : spriteImg("");
+  for (const sp of E.sprites) {
+    if (t < sp.born) continue;
+    const a = va * (sp.die ? clamp01((sp.die - t) / 300) : 1);
+    if (a <= 0) continue;
+    const p = posAt(sp, t);
+    const pp = reduceMotion ? 1 : (t - sp.born) / POP_MS;
+    let sc = pp >= 1 ? 1 : 1 + 2.7 * Math.pow(pp - 1, 3) + 1.7 * Math.pow(pp - 1, 2);   // pop with a little bounce
+    if (sp.pulseAt && t >= sp.pulseAt && t < sp.pulseAt + 360) sc *= 1 + 0.35 * Math.sin(Math.PI * (t - sp.pulseAt) / 360);
+    const z = s * sc, off = (s - z) / 2;
+    ctx.globalAlpha = a;
+    if (sp.ghost) {
+      ctx.setLineDash([Math.max(2, s * .12), Math.max(2, s * .1)]);
+      ctx.lineWidth = Math.max(1, s * .06);
+      ctx.strokeStyle = cMuted;
+      rr(p.x + s * .12, p.y + s * .12, s * .76, s * .76, s * .2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      continue;
+    }
+    if (sp.counted) { ctx.fillStyle = cCounted; rr(p.x, p.y, s, s, s * .3); ctx.fill(); }
+    if (sp.tint && !item.dot) {
+      ctx.globalAlpha = a * .32; ctx.fillStyle = sp.tint;
+      rr(p.x + off, p.y + off, z, z, z * .3); ctx.fill();
+      ctx.globalAlpha = a;
+    }
+    if (sp.hi) { ctx.lineWidth = Math.max(2, s * .09); ctx.strokeStyle = cHi; rr(p.x - 1, p.y - 1, s + 2, s + 2, s * .3); ctx.stroke(); }
+    const img = plain || spriteImg(sp.tint || PALETTE[(sp.ci || 0) % 5]);
+    ctx.drawImage(img, p.x + off, p.y + off, z, z);
+  }
+
+  // confetti
+  ctx.globalAlpha = 1;
+  for (const q of E.parts) {
+    ctx.save(); ctx.translate(q.x, q.y); ctx.rotate(q.r);
+    ctx.fillStyle = q.c; ctx.fillRect(-q.w / 2, -q.w / 4, q.w, q.w / 2);
+    ctx.restore();
+  }
+  ctx.globalAlpha = 1;
 }
 
-function kick() {
-  if (!raf) { lastTick = performance.now(); raf = requestAnimationFrame(tick); }
-}
-function tick(now) {
-  if (moving) { step(Math.max(0, Math.min(50, now - lastTick))); lastTick = now; }
-  draw(now);
-  const busy = moving || now < moveStart + MOVE_MS || now < lastBorn + POP_MS || now < framesStart + 400;
+let raf = 0, lastT = 0;
+function kick() { if (!raf) { lastT = now(); raf = requestAnimationFrame(tick); } }
+function tick(t) {
+  const dt = Math.max(0, Math.min(50, t - lastT)); lastT = t;
+  if (E.moving) stepMoving(dt);
+  if (E.parts.length) stepParts(dt);
+  if (E.sprites.some(s => s.die && t >= s.die)) E.sprites = E.sprites.filter(s => !s.die || t < s.die);
+  draw(t);
+  const busy = E.moving || E.parts.length || t < E.until || (E.veil && t < E.veil.t0 + 400);
   raf = busy ? requestAnimationFrame(tick) : 0;
 }
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", kick);
 
-/* ---------------- Status line ---------------- */
-function plural(k, word) { return k.toLocaleString() + " " + word + (k === 1 ? "" : "s"); }
-function updateStatus() {
-  const n = items.length;
-  if (n === 0) { statusEl.innerHTML = "Type a number to fill the board!"; return; }
-  let html = `<b>${n.toLocaleString()}</b> ${n === 1 ? item.one : item.label.toLowerCase()}`;
-  if (mode === 0 || mode === 10 || mode === 100) {
-    if (n >= 10) {
-      const th = Math.floor(n / 1000), h = Math.floor(n % 1000 / 100), t = Math.floor(n % 100 / 10), o = n % 10;
-      const parts = [];
-      if (th) parts.push(plural(th, "thousand"));
-      if (h) parts.push(plural(h, "hundred"));
-      if (t) parts.push(plural(t, "ten"));
-      if (o) parts.push(plural(o, "one"));
+/* =====================================================================
+   Layout helpers
+   ===================================================================== */
+const spread = n => 1.35 + 0.85 * Math.exp(-n / 300);   // room so scattered items look scattered
+function fitScatter(r, n, top = MAXS()) {
+  const need = Math.ceil(Math.max(1, n) * spread(n));
+  for (let s = top; s > 2; s -= 0.25) {
+    const c = s * 1.3;
+    if (Math.floor(r.w / c) * Math.floor(r.h / c) >= need) return s;
+  }
+  return 2;
+}
+function scatterSpots(r, n, s) {
+  const c = s * 1.3;
+  const cols = Math.max(1, Math.floor(r.w / c)), rows = Math.max(1, Math.floor(r.h / c)), total = cols * rows;
+  let slots;
+  if (n >= total * 0.5) slots = shuffle([...Array(total).keys()]).slice(0, n);
+  else { const used = new Set(); while (used.size < n) used.add(Math.floor(Math.random() * total)); slots = [...used]; }
+  while (slots.length < n) slots.push(Math.floor(Math.random() * total));
+  const ox = r.x + (r.w - cols * c) / 2, oy = r.y + (r.h - rows * c) / 2;
+  return slots.map(k => ({ x: ox + (k % cols) * c + Math.random() * (c - s), y: oy + Math.floor(k / cols) * c + Math.random() * (c - s) }));
+}
+const boxShape = g => GROUPS[g] || [Math.min(g, 5), Math.ceil(g / 5)];
+const groupDims = s => ({ pad: Math.max(1, s * 0.13), gap: Math.max(3, s * 0.3), bw: Math.max(1, Math.min(3, s * 0.06)) });
+
+// Largest size at which n items in boxes of g fit inside r.
+function fitGroups(r, n, g, top = MAXS(), { nf, below = 0 } = {}) {
+  const [c, rw] = boxShape(g);
+  nf = nf ?? Math.max(1, Math.ceil(n / g));
+  for (let s = top; s > 2; s -= 0.25) {
+    const { pad, gap, bw } = groupDims(s);
+    const fw = c * s + 2 * (pad + bw), fh = rw * s + 2 * (pad + bw) + below;
+    const per = Math.floor((r.w + gap) / (fw + gap));
+    if (per < 1) continue;
+    if (Math.ceil(nf / per) * (fh + gap) - gap <= r.h) return s;
+  }
+  return 2;
+}
+function groupLayout(r, n, g, s, { nf, below = 0, vcenter = true } = {}) {
+  const [c, rw] = boxShape(g);
+  nf = nf ?? Math.max(1, Math.ceil(n / g));
+  const { pad, gap, bw } = groupDims(s);
+  const fw = c * s + 2 * (pad + bw), boxH = rw * s + 2 * (pad + bw), fh = boxH + below;
+  const per = Math.max(1, Math.min(nf, Math.floor((r.w + gap) / (fw + gap))));
+  const rows = Math.ceil(nf / per);
+  const totW = per * (fw + gap) - gap, totH = rows * (fh + gap) - gap;
+  const ox = r.x + Math.max(0, (r.w - totW) / 2);
+  const oy = r.y + (vcenter ? Math.max(0, (r.h - totH) / 2) : 0);
+  const boxes = [];
+  for (let k = 0; k < nf; k++) {
+    const x = ox + (k % per) * (fw + gap), y = oy + Math.floor(k / per) * (fh + gap);
+    boxes.push({ x, y, w: fw, h: boxH, bw, cells: { c, r: rw, s, ox: x + bw + pad, oy: y + bw + pad } });
+  }
+  const spot = i => {
+    const b = boxes[Math.floor(i / g)], j = i % g;
+    return { x: b.cells.ox + (j % c) * s, y: b.cells.oy + Math.floor(j / c) * s };
+  };
+  return { boxes, spot, bottom: oy + totH, top: oy };
+}
+function fitGrid(r, rows, cols, top = MAXS(), gf = 0.18) {
+  return Math.max(2, Math.min(top, r.w / (cols * (1 + gf)), r.h / (rows * (1 + gf))));
+}
+function gridSpots(r, rows, cols, s, gf = 0.18) {
+  const c = s * (1 + gf);
+  const ox = r.x + (r.w - cols * c) / 2 + (c - s) / 2, oy = r.y + (r.h - rows * c) / 2 + (c - s) / 2;
+  return (row, col) => ({ x: ox + col * c, y: oy + row * c });
+}
+// Slide (or place) a list of sprites into boxes of ten. Returns how long the slide takes.
+function arrangeTens(list, anim, rect = board()) {
+  const n = list.length;
+  const s = fitGroups(rect, n, 10);
+  E.S = s;
+  const G = groupLayout(rect, n, 10, s);
+  E.frames = [];
+  G.boxes.forEach(b => frame(anim ? { ...b, delay: 250 } : b));
+  const st = Math.min(25, 400 / Math.max(1, n));
+  list.forEach((sp, i) => { const p = G.spot(i); moveTo(sp, p.x, p.y, anim ? i * st : 0, anim ? MOVE_MS : 0); });
+  return anim ? MOVE_MS + n * st : 0;
+}
+function scatterList(list, rect = board()) {
+  const s = fitScatter(rect, list.length);
+  E.S = s;
+  scatterSpots(rect, list.length, s).forEach((p, i) => moveTo(list[i], p.x, p.y, 0, 0));
+}
+// Make each item bounce in turn, calling onTick(1..n), then done().
+function countUp(list, { delay = 0, step, onTick, done } = {}) {
+  const n = list.length;
+  step = step ?? Math.min(240, 1700 / Math.max(1, n));
+  list.forEach((sp, i) => pulse(sp, delay + i * step));
+  if (onTick) for (let i = 0; i < n; i++) later(() => onTick(i + 1), delay + i * step);
+  later(() => done && done(), delay + n * step + 250);
+}
+
+/* =====================================================================
+   Talking, stars, banner, number pad
+   ===================================================================== */
+const talkOn = () => $("speak").checked && "speechSynthesis" in window;
+const plainText = s => s.replace(/<[^>]+>/g, " ").replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}️]/gu, "").replace(/\s+/g, " ").trim();
+function say(text, queue = false) {
+  if (!talkOn()) return;
+  if (!queue) speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(plainText(text));
+  u.rate = 1;
+  speechSynthesis.speak(u);
+}
+function stopSpeaking() { if ("speechSynthesis" in window) speechSynthesis.cancel(); }
+function countAloud(n) {
+  if (!talkOn()) return;
+  stopSpeaking();
+  if (n > 30 || n < 1) return say(String(n));
+  for (let i = 1; i <= n; i++) { const u = new SpeechSynthesisUtterance(String(i)); u.rate = 1.1; speechSynthesis.speak(u); }
+}
+
+let score = 0;
+function addStar() { score++; $("score").textContent = "⭐ " + score; }
+let bannerTimer;
+function banner(msg, kind = "good") {
+  const b = $("banner");
+  b.textContent = msg;
+  b.className = "banner show " + kind;
+  clearTimeout(bannerTimer);
+  bannerTimer = setTimeout(() => { b.className = "banner " + kind; }, 2000);
+}
+function celebrate(msg, spoken) { addStar(); banner(msg, "good"); confetti(); say(spoken || msg); }
+function encourage(msg, spoken) { banner(msg, "soft"); say(spoken || msg); }
+
+const padEl = $("pad");
+let padVal = "", padFn = null;
+padEl.innerHTML = '<div class="shown" id="padShown">?</div>' +
+  [1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map(d => `<button data-d="${d}">${d}</button>`).join("") +
+  '<button data-d="back" aria-label="Delete">⌫</button><button class="ok" data-d="ok" aria-label="Check">✓</button>';
+padEl.addEventListener("click", e => { const b = e.target.closest("button"); if (b) padKey(b.dataset.d); });
+function padKey(d) {
+  if (!padFn) return;
+  if (d === "back") padVal = padVal.slice(0, -1);
+  else if (d === "ok") { if (padVal !== "") padFn(+padVal); return; }
+  else if (padVal.length < 4) padVal = (padVal === "0" ? "" : padVal) + d;
+  $("padShown").textContent = padVal || "?";
+}
+function padShow(on) { padEl.hidden = !on; }            // shown for the whole activity, so the board size stays put
+function padOn(fn) { padFn = fn; padVal = ""; $("padShown").textContent = "?"; padEl.classList.remove("off"); }
+function padOff() { padFn = null; padEl.classList.add("off"); }
+function padClear() { padVal = ""; $("padShown").textContent = "?"; }
+document.addEventListener("keydown", e => {
+  if (padEl.hidden || !padFn) return;
+  const a = document.activeElement;
+  if (a && a.tagName === "INPUT" && a.type !== "checkbox" && a.type !== "range") return;
+  if (/^[0-9]$/.test(e.key)) padKey(e.key);
+  else if (e.key === "Backspace") padKey("back");
+  else if (e.key === "Enter") padKey("ok");
+});
+
+/* =====================================================================
+   Sidebar and prompt helpers
+   ===================================================================== */
+function side(title) {
+  const s = document.createElement("section");
+  if (title) { const h = document.createElement("h2"); h.textContent = title; s.appendChild(h); }
+  $("actControls").appendChild(s);
+  return s;
+}
+function choice(title, opts, value, fn, cols) {
+  const s = side(title);
+  const g = document.createElement("div");
+  g.className = "groups";
+  if (cols) g.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  const btns = opts.map(([v, text]) => {
+    const b = document.createElement("button");
+    b.className = "grp";
+    b.textContent = text;
+    b.setAttribute("aria-pressed", v === value);
+    b.onclick = () => { btns.forEach(x => x.setAttribute("aria-pressed", x === b)); fn(v); };
+    g.appendChild(b);
+    return b;
+  });
+  s.appendChild(g);
+  return { section: s, buttons: btns, set(v) { btns.forEach((b, i) => b.setAttribute("aria-pressed", opts[i][0] === v)); } };
+}
+function sideButton(parent, text, fn, cls = "") {
+  const b = document.createElement("button");
+  b.className = "grp wide " + cls;
+  b.textContent = text;
+  b.onclick = fn;
+  parent.appendChild(b);
+  return b;
+}
+function setPrompt(html) { $("prompt").innerHTML = html ? `<div class="line">${html}</div>` : ""; return $("prompt"); }
+// Add a row of big buttons to the prompt: [[text, fn, "go"?], ...]
+function promptButtons(list) {
+  const row = document.createElement("div");
+  row.className = "row";
+  for (const [text, fn, cls] of list) {
+    const b = document.createElement("button");
+    b.className = "pbtn " + (cls || "");
+    b.innerHTML = text;
+    b.onclick = fn;
+    row.appendChild(b);
+  }
+  $("prompt").appendChild(row);
+  return row;
+}
+const nextButton = fn => promptButtons([["Next ▶", fn, "go"]]);
+
+/* =====================================================================
+   Activities
+   ===================================================================== */
+const ACTS = {};
+
+/* ---------------- 1. Count ---------------- */
+ACTS.count = {
+  icon: "🔢", title: "Count", desc: "Type a number and fill the board.",
+  n: 7, mode: 0,
+  start() {
+    const s1 = side("Number");
+    s1.insertAdjacentHTML("beforeend",
+      `<input id="num" class="numbox" type="number" inputmode="numeric" min="0" max="10000" value="${this.n}" aria-label="Number">
+       <div class="steps"><button class="step" id="minus" aria-label="One less">−</button><button class="step" id="plus" aria-label="One more">+</button></div>`);
+    this.numEl = $("num");
+    $("minus").onclick = () => this.step(-1);
+    $("plus").onclick = () => this.step(1);
+    this.numEl.addEventListener("input", () => {
+      if (this.numEl.value !== "" && this.read() !== +this.numEl.value) this.numEl.value = this.read();
+      if (E.moving) this.toggleMove();
+      if (this.mode !== 0) { this.mode = 0; this.groupsUI.set(0); }   // a newly typed number starts scattered
+      this.setCount(this.read());
+      clearTimeout(this.tt);
+      this.tt = setTimeout(() => countAloud(this.read()), 700);
+    });
+    this.numEl.addEventListener("keydown", e => { if (e.key === "Enter") this.numEl.blur(); });
+    this.groupsUI = choice("Make groups of",
+      [[0, "🔀 Mix them up"], [2, "2"], [3, "3"], [4, "4"], [5, "5"], [10, "10"], [100, "100"]], this.mode, v => this.arrange(v));
+    this.groupsUI.buttons[0].classList.add("mix");
+    const s3 = side("Move");
+    this.moveBtn = sideButton(s3, "▶ Move", () => this.toggleMove());
+    s3.insertAdjacentHTML("beforeend", '<div class="speed"><span aria-hidden="true">🐢</span><input type="range" id="speed" min="1" max="10" value="4" aria-label="Speed"><span aria-hidden="true">🐇</span></div>');
+    speedFn = () => +$("speed").value;
+    this.items = []; this.used = new Set(); this.cols = this.rows = 0; this.tapped = 0;
+    this.setCount(this.n);
+  },
+  stop() { speedFn = () => 4; },
+  read() { const n = parseInt(this.numEl.value, 10); return isNaN(n) || n < 0 ? 0 : Math.min(n, 10000); },
+  step(d) {
+    this.numEl.value = Math.max(0, Math.min(10000, this.read() + d));
+    this.setCount(this.read());
+    say(String(this.read()));
+  },
+  arrange(g) {
+    if (E.moving) this.toggleMove();
+    this.mode = g;
+    if (g === 0) this.reshuffle();
+    this.fade = true;
+    this.layout(true);
+    this.fade = false;
+    this.status();
+  },
+  toggleMove() {
+    if (E.moving) {
+      stopMoving();
+      this.moveBtn.textContent = "▶ Move";
+    } else {
+      if (this.mode) { this.mode = 0; this.groupsUI.set(0); E.frames = []; this.status(); }
+      startMoving();
+      this.moveBtn.textContent = "⏸ Stop";
+    }
+  },
+  chooseSize(n) {
+    const r = board();
+    let s = fitScatter(r, n);
+    if (this.mode) s = Math.min(s, fitGroups(r, n, this.mode, s));
+    return s;
+  },
+  // A jittered grid of slots for scattering, so items never overlap.
+  setGrid(s) {
+    const r = board(), c = s * 1.3;
+    const cols = Math.max(1, Math.floor(r.w / c)), rows = Math.max(1, Math.floor(r.h / c));
+    if (cols === this.cols && rows === this.rows) return;
+    const oc = this.cols, or = this.rows;
+    this.cols = cols; this.rows = rows;
+    this.used.clear();
+    for (const sp of this.items) {   // keep each item near the same spot in the new grid
+      if (!oc) { sp.slot = this.takeSlot(); continue; }
+      const row = Math.min(rows - 1, Math.floor((Math.floor(sp.slot / oc) + .5) * rows / or));
+      const col = Math.min(cols - 1, Math.floor(((sp.slot % oc) + .5) * cols / oc));
+      const want = row * cols + col;
+      if (!this.used.has(want)) { this.used.add(want); sp.slot = want; } else sp.slot = this.takeSlot();
+    }
+  },
+  takeSlot() {
+    const total = this.cols * this.rows;
+    for (let t = 0; t < 50; t++) { const k = Math.floor(Math.random() * total); if (!this.used.has(k)) { this.used.add(k); return k; } }
+    for (let k = 0; k < total; k++) if (!this.used.has(k)) { this.used.add(k); return k; }
+    return 0;
+  },
+  reshuffle() {
+    this.used.clear();
+    for (const sp of this.items) { sp.slot = this.takeSlot(); sp.jx = Math.random(); sp.jy = Math.random(); }
+  },
+  setCount(n) {
+    const gone = [];
+    while (this.items.length > n) {
+      const sp = this.items.pop();
+      this.used.delete(sp.slot);
+      if (sp.counted) this.tapped--;
+      gone.push(sp);
+    }
+    if (gone.length) removeSprites(gone);
+    const add = n - this.items.length;
+    const st = Math.min(60, 900 / Math.max(1, add));
+    this.setGrid(this.chooseSize(n));
+    for (let k = 0; k < add; k++) {
+      const sp = sprite(0, 0, { delay: k * st });
+      sp.slot = this.takeSlot(); sp.jx = Math.random(); sp.jy = Math.random(); sp.isNew = true;
+      this.items.push(sp);
+    }
+    this.layout(true);
+    this.status();
+  },
+  layout(anim) {
+    const r = board(), n = this.items.length;
+    const s = this.chooseSize(n);
+    E.S = s;
+    this.setGrid(s);
+    E.frames = [];
+    const put = (sp, x, y) => {
+      if (sp.isNew || !anim) { moveTo(sp, x, y, 0, 0); sp.isNew = false; }
+      else if (sp.mx === undefined) moveTo(sp, x, y);
+    };
+    if (this.mode === 0 || E.moving) {
+      const c = s * 1.3, ox = r.x + (r.w - this.cols * c) / 2, oy = r.y + (r.h - this.rows * c) / 2;
+      this.items.forEach((sp, i) => {
+        sp.ci = i;
+        put(sp, ox + (sp.slot % this.cols) * c + sp.jx * (c - s), oy + Math.floor(sp.slot / this.cols) * c + sp.jy * (c - s));
+      });
+    } else {
+      const G = groupLayout(r, n, this.mode, s, { vcenter: false });
+      G.boxes.forEach(b => frame(this.fade ? { ...b, delay: 0 } : b));
+      this.items.forEach((sp, i) => { sp.ci = Math.floor(i / this.mode); const p = G.spot(i); put(sp, p.x, p.y); });
+    }
+  },
+  status() {
+    const n = this.items.length;
+    if (n === 0) { setPrompt("Type a number to fill the board!"); return; }
+    let html = `<b>${n.toLocaleString()}</b> ${word(n)}`;
+    const m = this.mode;
+    if (m === 0 || m === 10 || m === 100) {
+      if (n >= 10) {
+        const th = Math.floor(n / 1000), h = Math.floor(n % 1000 / 100), t = Math.floor(n % 100 / 10), o = n % 10, parts = [];
+        const pl = (k, w) => k.toLocaleString() + " " + w + (k === 1 ? "" : "s");
+        if (th) parts.push(pl(th, "thousand"));
+        if (h) parts.push(pl(h, "hundred"));
+        if (t) parts.push(pl(t, "ten"));
+        if (o) parts.push(pl(o, "one"));
+        html += " = " + parts.join(" + ");
+      }
+    } else {
+      const g = Math.floor(n / m), left = n % m, parts = [];
+      if (g) parts.push(`${g.toLocaleString()} group${g === 1 ? "" : "s"} of ${m}`);
+      if (left) parts.push(`${left} more`);
       html += " = " + parts.join(" + ");
     }
-  } else {
-    const groups = Math.floor(n / mode), left = n % mode, parts = [];
-    if (groups) parts.push(`${groups.toLocaleString()} group${groups === 1 ? "" : "s"} of ${mode}`);
-    if (left) parts.push(`${left} more`);
-    html += " = " + parts.join(" + ");
-  }
-  if (tapped > 0) html += ` <span class="tapped">· you've tapped ${tapped.toLocaleString()}</span>`;
-  statusEl.innerHTML = html;
+    if (this.tapped > 0) html += ` <span class="tapped">· you've tapped ${this.tapped.toLocaleString()}</span>`;
+    setPrompt(html);
+  },
+  tap(x, y) {
+    const sp = hitSprite(x, y);
+    if (!sp) return;
+    sp.counted = !sp.counted;
+    this.tapped += sp.counted ? 1 : -1;
+    this.status();
+    kick();
+  },
+  itemChanged() { this.status(); this.numEl.focus(); this.numEl.select(); },
+};
+
+/* ---------------- 2. Equations ---------------- */
+ACTS.eq = {
+  icon: "➕", title: "Equations", desc: "Build a number sentence, then watch it happen: add, take away, times and share.",
+  op: "+",
+  vals: { "+": [3, 4], "−": [7, 3], "×": [3, 4], "÷": [12, 3] },
+  limits: { "+": [[0, 20], [0, 20]], "−": [[0, 20], [0, 20]], "×": [[1, 10], [1, 10]], "÷": [[0, 100], [1, 10]] },
+  LB: 48,   // room for text under the items
+  start() {
+    choice("Operation", [["+", "+ Add"], ["−", "− Take away"], ["×", "× Times"], ["÷", "÷ Share"]], this.op, v => { this.op = v; this.reset(); }, 2);
+    const s = side("");
+    sideButton(s, "🎲 New numbers", () => this.random());
+    this.flipBtn = sideButton(s, "🔄 Flip it around", () => this.flip());
+    s.insertAdjacentHTML("beforeend", '<p class="hint">Change the numbers with ▲ ▼, or tap the board to add more. Then press =</p>');
+    this.reset();
+  },
+  get a() { return this.vals[this.op][0]; },
+  get b() { return this.vals[this.op][1]; },
+  reset() {
+    clearBoard();
+    this.solved = false; this.flipped = false;
+    this.A = []; this.B = [];
+    this.renderEq();
+    this.sync(true);
+  },
+  random() {
+    const v = this.vals;
+    if (this.op === "+") v["+"] = [rand(1, 10), rand(1, 10)];
+    if (this.op === "−") { const a = rand(4, 15); v["−"] = [a, rand(1, a - 1)]; }
+    if (this.op === "×") v["×"] = [rand(2, 5), rand(2, 5)];
+    if (this.op === "÷") { const b = rand(2, 5), q = rand(2, 5); v["÷"] = [b * q + (Math.random() < .35 ? rand(1, b - 1) : 0), b]; }
+    this.reset();
+  },
+  renderEq() {
+    const sign = { "+": "+", "−": "−", "×": "×", "÷": "÷" }[this.op];
+    const num = (k, cls) => `<div class="num">
+        <button class="arrow" data-k="${k}" data-d="1" aria-label="More">▲</button>
+        <input class="tile ${cls}" id="eq${k}" type="number" inputmode="numeric" value="${this.vals[this.op][k]}" aria-label="Number ${k + 1}">
+        <button class="arrow" data-k="${k}" data-d="-1" aria-label="Less">▼</button></div>`;
+    setPrompt(`<div class="eq">${num(0, this.op === "+" || this.op === "−" ? "a" : "")}<span class="opsign">${sign}</span>${num(1, this.op === "+" ? "b" : "")}
+      <button class="equals" id="eqGo" aria-label="Equals">=</button><div class="tile res" id="eqR">?</div></div>`);
+    document.querySelectorAll(".eq .arrow").forEach(b => b.onclick = () => this.change(+b.dataset.k, this.vals[this.op][+b.dataset.k] + +b.dataset.d));
+    [0, 1].forEach(k => $("eq" + k).addEventListener("input", e => { const v = parseInt(e.target.value, 10); if (!isNaN(v)) this.change(k, v, true); }));
+    $("eqGo").onclick = () => this.solve();
+    this.flipBtn.hidden = true;
+  },
+  change(k, v, typing) {
+    const [lo, hi0] = this.limits[this.op][k];
+    const hi = this.op === "−" && k === 1 ? Math.min(hi0, this.a) : hi0;
+    v = Math.max(lo, Math.min(hi, v));
+    const vals = this.vals[this.op];
+    vals[k] = v;
+    if (this.op === "−" && vals[1] > vals[0]) vals[1] = vals[0];
+    [0, 1].forEach(i => { const el = $("eq" + i); if (!(typing && i === k && document.activeElement === el)) el.value = vals[i]; });
+    if (this.solved) { clearBoard(); this.solved = false; this.flipped = false; this.A = []; this.B = []; $("eqR").innerHTML = "?"; this.flipBtn.hidden = true; }
+    this.sync(true);
+  },
+  // Make sure we have the right number of items, then lay them out.
+  sync(anim) {
+    const grow = (arr, n) => {
+      const gone = arr.splice(n);
+      if (gone.length) removeSprites(gone);
+      const add = n - arr.length, st = Math.min(50, 500 / Math.max(1, add));
+      for (let k = 0; k < add; k++) { const sp = sprite(0, 0, { delay: k * st }); sp.isNew = true; arr.push(sp); }
+    };
+    const { a, b } = this;
+    if (this.op === "+") { grow(this.A, a); grow(this.B, b); }
+    else if (this.op === "×") grow(this.A, a * b);
+    else { grow(this.A, a); this.B = []; }
+    this.layoutPre(anim);
+  },
+  put(sp, p, anim) {
+    if (sp.isNew || !anim) { moveTo(sp, p.x, p.y, 0, 0); sp.isNew = false; } else moveTo(sp, p.x, p.y);
+  },
+  layoutPre(anim) {
+    const r = board(), LB = this.LB, { a, b } = this;
+    E.frames = []; E.labels = [];
+    const body = shrink(r, { bottom: LB });
+    const textY = r.y + r.h - LB / 2;
+    if (this.op === "+") {
+      // Side by side on wide screens, one above the other on tall narrow ones.
+      const stack = this.stacked(), mid = stack ? 44 : 56;
+      let L, R;
+      if (stack) {
+        const half = (body.h - mid) / 2;
+        L = { x: r.x, y: r.y, w: r.w, h: half }; R = { x: r.x, y: r.y + half + mid, w: r.w, h: half };
+      } else {
+        const half = (r.w - mid) / 2;
+        L = { x: r.x, y: r.y, w: half, h: body.h }; R = { x: r.x + half + mid, y: r.y, w: half, h: body.h };
+      }
+      const s = Math.min(fitGroups(L, a, 10), fitGroups(R, b, 10));
+      E.S = s;
+      const GL = groupLayout(L, a, 10, s), GR = groupLayout(R, b, 10, s);
+      if (a) GL.boxes.forEach(f => frame(f));
+      if (b) GR.boxes.forEach(f => frame(f));
+      this.A.forEach((sp, i) => { sp.tint = TINT_A; this.put(sp, GL.spot(i), anim); });
+      this.B.forEach((sp, i) => { sp.tint = TINT_B; this.put(sp, GR.spot(i), anim); });
+      if (stack) {
+        label({ x: r.x + r.w / 2, y: L.y + L.h + mid / 2, text: "+", size: 36 });
+        label({ x: r.x + r.w / 2, y: textY, text: `${a} and ${b}`, size: 26 });
+      } else {
+        label({ x: L.x + L.w / 2, y: textY, text: String(a), size: 32, color: TINT_A });
+        label({ x: R.x + R.w / 2, y: textY, text: String(b), size: 32, color: TINT_B });
+        label({ x: r.x + r.w / 2, y: body.y + body.h / 2, text: "+", size: 44 });
+      }
+    } else if (this.op === "−") {
+      const s = fitGroups(body, a, 10);
+      E.S = s;
+      const G = groupLayout(body, a, 10, s);
+      if (a) G.boxes.forEach(f => frame(f));
+      this.A.forEach((sp, i) => { sp.tint = i < a - b ? TINT_A : TINT_OFF; this.put(sp, G.spot(i), anim); });
+      label({ x: r.x + r.w / 2, y: textY, text: `${a} take away ${b}`, size: 26 });
+    } else if (this.op === "×") {
+      const s = fitGroups(body, a * b, b, MAXS(), { nf: a });
+      E.S = s;
+      const G = groupLayout(body, a * b, b, s, { nf: a });
+      G.boxes.forEach(f => frame(f));
+      this.A.forEach((sp, i) => {
+        sp.g = Math.floor(i / b); sp.j = i % b;
+        sp.tint = PALETTE[sp.g % PALETTE.length]; sp.ci = sp.g;
+        this.put(sp, G.spot(i), anim);
+      });
+      label({ x: r.x + r.w / 2, y: textY, text: `${a} group${a === 1 ? "" : "s"} of ${b}`, size: 26 });
+    } else {
+      const { top, bot, s, GT, GB } = this.divLayout();
+      E.S = s;
+      if (a) GT.boxes.forEach(f => frame({ ...f, dashed: true, fill: null }));
+      GB.boxes.forEach(f => frame(f));
+      this.A.forEach((sp, i) => { sp.tint = TINT_A; this.put(sp, GT.spot(i), anim); });
+      label({ x: r.x + r.w / 2, y: textY, text: `Share ${a} into ${b} group${b === 1 ? "" : "s"}`, size: 26 });
+    }
+  },
+  divLayout() {
+    const r = board(), { a, b } = this;
+    const body = shrink(r, { bottom: this.LB });
+    const q = Math.floor(a / b), cap = Math.max(1, q);
+    const top = { x: body.x, y: body.y, w: body.w, h: body.h * 0.42 };
+    const bot = { x: body.x, y: body.y + top.h + 12, w: body.w, h: body.h - top.h - 12 };
+    const below = 26;
+    const s = Math.min(fitGroups(top, a, 10), fitGroups(bot, b * cap, cap, MAXS(), { nf: b, below }));
+    const GT = groupLayout(top, a, 10, s);
+    const GB = groupLayout(bot, b * cap, cap, s, { nf: b, below });
+    return { top, bot, s, GT, GB, q, cap, rem: a % b };
+  },
+  stacked() { const r = board(); return r.w < r.h * 0.9; },
+  tap(x, y) {
+    if (this.solved) return;
+    if (this.op === "+") {
+      const first = this.stacked() ? y < E.H / 2 : x < E.W / 2;
+      this.change(first ? 0 : 1, (first ? this.a : this.b) + 1);
+    }
+    else this.change(0, this.a + 1);
+  },
+  solve() {
+    if (this.solved) return;
+    this.solved = true;
+    const res = $("eqR");
+    res.textContent = "";
+    this.layoutSolved(true, res);
+  },
+  flip() {
+    if (!this.solved || this.op !== "×") return;
+    const v = this.vals["×"];
+    this.vals["×"] = [v[1], v[0]];
+    this.flipped = !this.flipped;
+    $("eq0").value = this.a; $("eq1").value = this.b;
+    E.labels = [];
+    E.timers.forEach(clearTimeout); E.timers = [];
+    $("eqR").textContent = "";
+    this.layoutSolved(true, $("eqR"));
+  },
+  layoutSolved(anim, res) {
+    const r = board(), LB = this.LB, { a, b } = this;
+    const body = shrink(r, { bottom: LB });
+    const textY = r.y + r.h - LB / 2;
+    const finish = (text, spoken) => {
+      label({ x: r.x + r.w / 2, y: textY, text, size: 30, delay: anim ? 0 : undefined });
+      if (anim) { banner(text, "good"); say(spoken); }
+    };
+    const show = v => { if (res) res.innerHTML = v; };
+
+    if (this.op === "+") {
+      const all = this.A.concat(this.B), n = all.length;
+      const s = fitGroups(body, n, 10);
+      E.S = s; E.frames = []; E.labels = [];
+      const G = groupLayout(body, n, 10, s);
+      G.boxes.forEach(f => frame(anim ? { ...f, delay: 200 } : f));
+      all.forEach((sp, i) => { const p = G.spot(i); moveTo(sp, p.x, p.y, anim ? i * 20 : 0, anim ? MOVE_MS : 0); });
+      const text = `${a} + ${b} = ${n}`, spoken = `${a} plus ${b} equals ${n}`;
+      if (!anim) { finish(text); show(n); return; }
+      countUp(all, { delay: MOVE_MS + n * 20 + 100, onTick: k => show(k), done: () => finish(text, spoken) });
+    }
+
+    else if (this.op === "−") {
+      const keep = this.A.slice(0, a - b), go = this.A.slice(a - b), n = keep.length;
+      const text = `${a} − ${b} = ${n}`, spoken = `${a} take away ${b} equals ${n}`;
+      E.labels = [];
+      if (!anim) {
+        removeSprites(go); this.A = keep;
+        const s = fitGroups(body, a, 10); E.S = s; E.frames = [];
+        const G = groupLayout(body, a, 10, s);
+        G.boxes.forEach(f => frame(f));
+        keep.forEach((sp, i) => { const p = G.spot(i); moveTo(sp, p.x, p.y, 0, 0); });
+        finish(text); show(n); return;
+      }
+      go.slice().reverse().forEach((sp, i) => { const p = posAt(sp, now()); leave(sp, E.W + E.S * 2, p.y, i * 160, 1000); });
+      this.A = keep;
+      countUp(keep, { delay: go.length * 160 + 1100, onTick: k => show(k), done: () => { show(n); finish(text, spoken); } });
+      if (!keep.length) later(() => show(0), go.length * 160 + 1100);
+    }
+
+    else if (this.op === "×") {
+      const n = a * b, LW = 64;
+      const area = shrink(body, { right: LW });
+      const s = fitGrid(area, a, b);
+      E.S = s; E.frames = []; E.labels = [];
+      const spot = gridSpots(area, a, b, s);
+      const rowOf = sp => (this.flipped ? sp.j : sp.g), colOf = sp => (this.flipped ? sp.g : sp.j);
+      this.A.forEach((sp, i) => { const p = spot(rowOf(sp), colOf(sp)); moveTo(sp, p.x, p.y, anim ? i * 10 : 0, anim ? MOVE_MS : 0); });
+      const rowLabel = (row, delay) => {
+        const p = spot(row, b - 1);
+        label({ x: p.x + s + 30, y: p.y + s / 2, text: String((row + 1) * b), size: Math.max(14, Math.min(26, s * .7)), color: css("--accent"), delay });
+      };
+      const text = `${a} × ${b} = ${n}`, spoken = `${a} times ${b} equals ${n}`;
+      if (!anim) { for (let row = 0; row < a; row++) rowLabel(row); finish(text); show(n); this.flipBtn.hidden = false; return; }
+      const start = MOVE_MS + n * 10 + 150, st = Math.min(800, 3200 / a);
+      for (let row = 0; row < a; row++) {
+        later(() => {
+          this.A.filter(sp => rowOf(sp) === row).forEach((sp, i) => pulse(sp, i * 25));
+          rowLabel(row, 0);
+          show((row + 1) * b);
+          say(String((row + 1) * b), true);
+        }, start + row * st);
+      }
+      later(() => { finish(text, spoken); this.flipBtn.hidden = false; }, start + a * st + 300);
+    }
+
+    else {
+      const { GT, GB, s, q, cap, rem } = this.divLayout();
+      E.S = s; E.frames = []; E.labels = [];
+      GB.boxes.forEach(f => frame(f));
+      const dealt = this.A.slice(0, b * q), left = this.A.slice(b * q);
+      const st = Math.min(350, 3500 / Math.max(1, dealt.length));
+      dealt.forEach((sp, k) => {
+        const p = GB.spot((k % b) * cap + Math.floor(k / b));
+        moveTo(sp, p.x, p.y, anim ? k * st : 0, anim ? 450 : 0);
+      });
+      const end = anim ? dealt.length * st + 500 : 0;
+      const GL = groupLayout({ ...GT.boxes[0], x: board().x, w: board().w, y: GT.top, h: GB.top - GT.top - 12 }, rem, 10, s);
+      const wrapUp = () => {
+        GB.boxes.forEach(f => label({ x: f.x + f.w / 2, y: f.y + f.h + 14, text: String(q), size: Math.max(14, Math.min(24, s * .6)), color: css("--accent"), delay: anim ? 0 : undefined }));
+        left.forEach((sp, i) => { const p = GL.spot(i); sp.hi = true; moveTo(sp, p.x, p.y, 0, anim ? 400 : 0); if (anim) pulse(sp, 450); });
+        if (rem) label({ x: board().x + board().w / 2, y: GL.bottom + 16, text: `${rem} left over`, size: 20, color: css("--muted"), delay: anim ? 0 : undefined });
+        show(`${q}${rem ? `<small>${rem} left over</small>` : ""}`);
+        finish(`${a} ÷ ${b} = ${q}${rem ? `, ${rem} left over` : ""}`,
+          `${a} shared into ${b} groups is ${q} each${rem ? `, with ${rem} left over` : ""}`);
+      };
+      if (anim) later(wrapUp, end); else wrapUp();
+    }
+  },
+  layout() { if (this.solved) this.layoutSolved(false, $("eqR")); else this.layoutPre(false); },
+};
+
+/* ---------------- 3. Guess how many ---------------- */
+ACTS.guess = {
+  icon: "🤔", title: "Guess how many", desc: "Take a quick look, make a guess, then count to check.",
+  up: 20, hide: 5, move: true, usesPad: true,
+  start() {
+    choice("Up to", [[10, "10"], [20, "20"], [50, "50"], [100, "100"]], this.up, v => { this.up = v; this.round(); });
+    choice("Hide after", [[3, "3 s"], [5, "5 s"], [10, "10 s"], [0, "Never"]], this.hide, v => { this.hide = v; }, 2);
+    choice("They…", [[true, "Move"], [false, "Stay still"]], this.move, v => {
+      this.move = v;
+      if (this.answered) return;
+      if (v) startMoving(); else stopMoving();
+    }, 2);
+    sideButton(side(""), "▶ New round", () => this.round(), "go");
+    this.round();
+  },
+  stop() { stopMoving(); },
+  round() {
+    clearBoard();
+    this.answered = false;
+    let n;
+    do n = rand(Math.max(3, Math.ceil(this.up * .3)), this.up); while (n === this.n);
+    this.n = n;
+    this.list = [];
+    for (let i = 0; i < n; i++) this.list.push(sprite(0, 0, { delay: i * Math.min(40, 600 / n), ci: i }));
+    scatterList(this.list);
+    setPrompt(`How many ${P()} are there? <b>Make a guess!</b>`);
+    padOn(g => this.check(g));
+    if (this.move) later(() => { if (!this.answered) startMoving(); }, 900);
+    if (this.hide) later(() => {
+      if (this.answered) return;
+      veil(true);
+      setPrompt(`They're hiding! How many ${P()} did you see?`);
+    }, 900 + this.hide * 1000);
+  },
+  check(g) {
+    if (this.answered) return;
+    this.answered = true;
+    padOff();
+    stopMoving();
+    if (E.veil && E.veil.hide) veil(false);
+    const n = this.n;
+    const t = arrangeTens(this.list, true);
+    setPrompt(`You guessed <b>${g}</b>. Let's count… <b id="cnt"></b>`);
+    countUp(this.list, {
+      delay: t + 100,
+      onTick: k => { const c = $("cnt"); if (c) c.textContent = k; },
+      done: () => {
+        const d = Math.abs(g - n);
+        setPrompt(`You guessed <b>${g}</b>. There are <b>${n}</b> ${P()}.`);
+        nextButton(() => this.round());
+        if (d === 0) celebrate("Exactly right! 🎯");
+        else if (d <= Math.max(1, Math.round(n * .1))) celebrate("Super close! 🌟");
+        else if (d <= Math.round(n * .25)) { banner("Good guess! 👍"); say(`Good guess! There are ${n}.`); }
+        else encourage("Nice try! 💪", `Nice try! There are ${n}.`);
+      },
+    });
+  },
+  layout() {
+    if (this.answered) arrangeTens(this.list, false);
+    else if (!E.moving) scatterList(this.list);
+  },
+};
+
+/* ---------------- 4. Quick look ---------------- */
+ACTS.quick = {
+  icon: "⚡", title: "Quick look", desc: "They only show up for a second. How many did you see?",
+  up: 10, secs: 2, tens: false, usesPad: true,
+  start() {
+    choice("Up to", [[5, "5"], [10, "10"], [20, "20"]], this.up, v => { this.up = v; this.round(); });
+    choice("Show for", [[1, "1 s"], [2, "2 s"], [3, "3 s"]], this.secs, v => { this.secs = v; });
+    choice("Show them", [[false, "Scattered"], [true, "In tens"]], this.tens, v => { this.tens = v; this.round(); }, 2);
+    sideButton(side(""), "▶ Next", () => this.round(), "go");
+    this.round();
+  },
+  region() {
+    const r = board();
+    const w = Math.min(r.w, 560), h = Math.min(r.h, 380);
+    return { x: r.x + (r.w - w) / 2, y: r.y + (r.h - h) / 2, w, h };
+  },
+  round() {
+    clearBoard();
+    padOff();
+    this.answered = false; this.list = [];
+    let n;
+    do n = rand(1, this.up); while (n === this.n && this.up > 1);
+    this.n = n;
+    setPrompt("Watch closely! 👀");
+    const r = board();
+    const lab = label({ x: r.x + r.w / 2, y: r.y + r.h / 2, text: "Get ready…", size: 40 });
+    kick();
+    ["3", "2", "1"].forEach((t, i) => later(() => { lab.text = t; lab.born = now(); bump(now() + 350); }, 700 + i * 650));
+    later(() => { E.labels = []; this.show(); }, 700 + 3 * 650);
+  },
+  place() {
+    const reg = this.region();
+    E.frames = [];
+    if (this.tens) {
+      const s = fitGroups(reg, this.n, 10);
+      E.S = s;
+      const G = groupLayout(reg, this.n, 10, s);
+      G.boxes.forEach(b => frame(b));
+      this.list.forEach((sp, i) => { const p = G.spot(i); moveTo(sp, p.x, p.y, 0, 0); });
+    } else scatterList(this.list, reg);
+  },
+  show() {
+    for (let i = 0; i < this.n; i++) this.list.push(sprite(0, 0, { ci: i }));
+    this.place();
+    this.shown = true;
+    later(() => {
+      veil(true);
+      setPrompt(`How many ${P()} did you see?`);
+      padOn(g => this.check(g));
+    }, this.secs * 1000 + POP_MS);
+  },
+  check(g) {
+    if (this.answered) return;
+    this.answered = true;
+    padOff();
+    veil(false);
+    const n = this.n;
+    const t = this.tens ? 0 : arrangeTens(this.list, true);
+    countUp(this.list, {
+      delay: t + 200,
+      done: () => {
+        setPrompt(`You said <b>${g}</b>. There ${n === 1 ? "was" : "were"} <b>${n}</b>.`);
+        nextButton(() => this.round());
+        if (g === n) celebrate(`Yes! ${n}! ⚡`);
+        else encourage(`It was ${n}!`, `It was ${n}. Let's try another one!`);
+      },
+    });
+  },
+  layout() {
+    if (this.answered && !this.tens) arrangeTens(this.list, false);
+    else if (this.list.length) this.place();
+  },
+};
+
+/* ---------------- 5 & 6. Missing number / Make 10 ---------------- */
+function missingAct(make) {
+  return {
+    icon: make ? "🔟" : "❓",
+    title: make ? "Make 10" : "Missing number",
+    desc: make ? "How many more to fill the box?" : "Find the number that's hiding.",
+    up: 10, usesPad: true,
+    start() {
+      choice(make ? "Make" : "Up to", [[10, "10"], [20, "20"]], this.up, v => { this.up = v; this.round(); }, 2);
+      const s = side("");
+      sideButton(s, "▶ Next", () => this.round(), "go");
+      s.insertAdjacentHTML("beforeend", '<p class="hint">Tap the empty spots to fill them in, then type the answer.</p>');
+      this.round();
+    },
+    round() {
+      clearBoard();
+      this.done = false; this.tries = 0;
+      let T, k;
+      do {
+        T = make ? this.up : rand(3, this.up);
+        k = rand(this.up === 20 && make ? 3 : 1, T - 1);
+      } while (this.last === `${T},${k}`);
+      this.last = `${T},${k}`;
+      this.T = T; this.k = k; this.m = T - k;
+      this.first = make ? true : Math.random() < .5;   // "k + ?" or "? + k"
+      this.order = []; this.slots = [];
+      for (let i = 0; i < T; i++) {
+        const known = this.first ? i < k : i >= this.m;
+        const sp = sprite(0, 0, { delay: i * 25 });
+        if (known) sp.tint = TINT_A; else { sp.ghost = true; sp.slot = true; this.slots.push(sp); }
+        this.order.push(sp);
+      }
+      this.layout();
+      this.renderEq();
+      padOn(g => this.check(g));
+      say(make ? `How many more to make ${T}?` : this.first ? `${k} plus what makes ${T}?` : `What plus ${k} makes ${T}?`);
+    },
+    layout() {
+      const r = board();
+      const s = fitGroups(r, this.T, 10);
+      E.S = s; E.frames = [];
+      const G = groupLayout(r, this.T, 10, s);
+      G.boxes.forEach(b => frame(b));
+      this.order.forEach((sp, i) => { const p = G.spot(i); moveTo(sp, p.x, p.y, 0, 0); });
+    },
+    renderEq() {
+      const filled = this.slots.filter(s => !s.ghost).length;
+      const q = `<span class="tile b">${this.done ? this.m : (filled || "?")}</span>`;
+      const kk = `<span class="tile a">${this.k}</span>`;
+      const eq = `<div class="eq">${this.first ? kk : q}<span class="opsign">+</span>${this.first ? q : kk}<span class="opsign">=</span><span class="tile">${this.T}</span></div>`;
+      setPrompt((make ? `<div class="row">How many more to make <b>${this.T}</b>?</div>` : "") + eq);
+      if (this.done) nextButton(() => this.round());
+    },
+    tap(x, y) {
+      if (this.done) return;
+      const sp = hitSprite(x, y, s => s.slot);
+      if (!sp) return;
+      sp.ghost = !sp.ghost;
+      if (!sp.ghost) { sp.tint = TINT_B; sp.born = now(); bump(now() + POP_MS); }
+      kick();
+      this.renderEq();
+    },
+    check(g) {
+      if (this.done) return;
+      if (g === this.m) {
+        this.done = true;
+        padOff();
+        const rest = this.slots.filter(s => s.ghost);
+        rest.forEach((sp, i) => { sp.ghost = false; sp.tint = TINT_B; sp.born = now() + i * 120; bump(sp.born + POP_MS); });
+        this.renderEq();
+        const eq = this.first ? `${this.k} + ${this.m} = ${this.T}` : `${this.m} + ${this.k} = ${this.T}`;
+        celebrate(`${eq} 🎉`, this.first ? `Yes! ${this.k} plus ${this.m} makes ${this.T}!` : `Yes! ${this.m} plus ${this.k} makes ${this.T}!`);
+        countUp(this.order, { delay: rest.length * 120 + 300 });
+      } else {
+        this.tries++;
+        padClear();
+        encourage(this.tries >= 2 ? "Tap the empty spots and count them!" : "Not quite. Try again!");
+      }
+    },
+  };
+}
+ACTS.missing = missingAct(false);
+ACTS.make10 = missingAct(true);
+
+/* ---------------- 7. Odd or even ---------------- */
+ACTS.oddeven = {
+  icon: "👯", title: "Odd or even", desc: "Can everyone find a partner, or is one left over?",
+  up: 20,
+  start() {
+    choice("Up to", [[10, "10"], [20, "20"], [30, "30"]], this.up, v => { this.up = v; this.round(); });
+    const s = side("");
+    sideButton(s, "👫 Pair them up", () => { if (!this.paired) this.pair(true); });
+    sideButton(s, "▶ Next", () => this.round(), "go");
+    this.round();
+  },
+  round() {
+    clearBoard();
+    this.done = false; this.paired = false;
+    let n;
+    do n = rand(1, this.up); while (n === this.n);
+    this.n = n;
+    this.list = [];
+    for (let i = 0; i < n; i++) this.list.push(sprite(0, 0, { delay: i * 30, ci: i }));
+    scatterList(this.list);
+    setPrompt(`Is <b>${n}</b> odd or even?`);
+    promptButtons([["Odd", () => this.answer(true)], ["Even", () => this.answer(false)]]);
+    say(`Is ${n} odd or even?`);
+  },
+  pair(anim) {
+    this.paired = true;
+    const r = board(), n = this.n;
+    const s = Math.min(MAXS(), fitGroups(r, n, 2));
+    E.S = s; E.frames = [];
+    const G = groupLayout(r, n, 2, s);
+    G.boxes.forEach(b => frame(anim ? { ...b, delay: MOVE_MS - 200 } : b));
+    this.list.forEach((sp, i) => { sp.ci = Math.floor(i / 2); const p = G.spot(i); moveTo(sp, p.x, p.y, anim ? i * 15 : 0, anim ? MOVE_MS : 0); });
+    if (n % 2) {
+      const last = this.list[n - 1];
+      if (anim) later(() => { last.hi = true; pulse(last); }, MOVE_MS + n * 15); else last.hi = true;
+    }
+  },
+  answer(saidOdd) {
+    if (this.done) return;
+    this.done = true;
+    const n = this.n, odd = n % 2 === 1;
+    if (!this.paired) this.pair(true);
+    const expl = odd ? `${n} is <b>odd</b>: ${Math.floor(n / 2)} pair${n > 3 ? "s" : ""} and 1 left over.` : `${n} is <b>even</b>: ${n / 2} pair${n > 2 ? "s" : ""}, nobody left over.`;
+    later(() => {
+      setPrompt(expl);
+      nextButton(() => this.round());
+      if (saidOdd === odd) celebrate(`Yes! ${n} is ${odd ? "odd" : "even"}! 👯`);
+      else encourage(`${n} is ${odd ? "odd" : "even"}!`, plainText(expl));
+    }, MOVE_MS + n * 15 + 200);
+  },
+  layout() { if (this.paired) this.pair(false); else scatterList(this.list); },
+};
+
+/* ---------------- 8. Skip counting ---------------- */
+ACTS.skip = {
+  icon: "🦘", title: "Skip counting", desc: "Count by 2s, 5s and 10s, one group at a time.",
+  step: 5, groups: 10,
+  start() {
+    choice("Count by", [[2, "2s"], [3, "3s"], [4, "4s"], [5, "5s"], [10, "10s"]], this.step, v => { this.step = v; this.setup(); });
+    choice("Groups", [[5, "5"], [10, "10"]], this.groups, v => { this.groups = v; this.setup(); }, 2);
+    const s = side("");
+    sideButton(s, "▶ Count for me", () => this.auto(), "go");
+    sideButton(s, "↺ Start over", () => this.setup());
+    this.setup();
+  },
+  setup() {
+    clearBoard();
+    this.counted = 0; this.seq = [];
+    this.list = [];
+    const n = this.step * this.groups;
+    for (let i = 0; i < n; i++) {
+      const sp = sprite(0, 0, { delay: i * Math.min(15, 600 / n) });
+      sp.g = Math.floor(i / this.step);
+      sp.tint = sp.g % 2 ? TINT_B : TINT_A;
+      sp.ci = sp.g;
+      this.list.push(sp);
+    }
+    this.layout();
+    this.prompt();
+  },
+  layout() {
+    const r = board(), n = this.list.length, below = 30;
+    const s = fitGroups(r, n, this.step, MAXS(), { below });
+    E.S = s; E.frames = []; E.labels = [];
+    this.G = groupLayout(r, n, this.step, s, { below });
+    this.G.boxes.forEach((b, k) => { const f = frame(b); f.hi = k < this.counted; });
+    for (let k = 0; k < this.counted; k++) this.addLabel(k, false);
+    this.list.forEach((sp, i) => { const p = this.G.spot(i); moveTo(sp, p.x, p.y, 0, 0); });
+  },
+  addLabel(k, fade) {
+    const b = this.G.boxes[k];
+    label({ x: b.x + b.w / 2, y: b.y + b.h + 15, text: String((k + 1) * this.step), size: Math.max(14, Math.min(24, b.w / 3)), color: css("--accent"), delay: fade ? 0 : undefined });
+  },
+  prompt() {
+    if (!this.counted) setPrompt(`Tap the groups to count by <b>${this.step}s</b>!`);
+    else setPrompt(`<span class="seq">${this.seq.join(", ")}</span>`);
+  },
+  tap() { this.next(); },
+  next() {
+    if (this.counted >= this.groups) return;
+    const k = this.counted++;
+    E.frames[k].hi = true;
+    this.list.filter(s => s.g === k).forEach((s, i) => pulse(s, i * 30));
+    this.addLabel(k, true);
+    const v = (k + 1) * this.step;
+    this.seq.push(v);
+    this.prompt();
+    say(String(v));
+    kick();
+    if (this.counted === this.groups) later(() => celebrate(`You counted by ${this.step}s to ${v}! 🦘`), 500);
+  },
+  auto() {
+    if (this.counted >= this.groups) this.setup();
+    const go = () => { if (this.counted < this.groups) { this.next(); later(go, 900); } };
+    go();
+  },
+};
+
+/* ---------------- 9. Which is more? ---------------- */
+ACTS.more = {
+  icon: "⚖️", title: "Which is more?", desc: "Two piles. Which side has more?",
+  up: 10,
+  start() {
+    choice("Up to", [[5, "5"], [10, "10"], [20, "20"], [50, "50"]], this.up, v => { this.up = v; this.round(); });
+    sideButton(side(""), "▶ Next", () => this.round(), "go");
+    this.round();
+  },
+  round() {
+    clearBoard();
+    this.done = false;
+    const up = this.up, a = rand(1, up);
+    let b;
+    if (Math.random() < .15) b = a; else do b = rand(1, up); while (b === a);
+    this.a = a; this.b = b;
+    this.L = []; this.R = [];
+    for (let i = 0; i < a; i++) this.L.push(sprite(0, 0, { delay: i * 30, tint: TINT_A }));
+    for (let i = 0; i < b; i++) this.R.push(sprite(0, 0, { delay: i * 30, tint: TINT_B }));
+    this.layout();
+    setPrompt("Which side has <b>more</b>?");
+    promptButtons([["◀ This side", () => this.answer("left")], ["Same", () => this.answer("same")], ["This side ▶", () => this.answer("right")]]);
+    say("Which side has more?");
+  },
+  scatter() {
+    const r = board(), mid = 24, half = (r.w - mid) / 2;
+    const L = { x: r.x, y: r.y, w: half, h: r.h }, R = { x: r.x + half + mid, y: r.y, w: half, h: r.h };
+    const s = Math.min(fitScatter(L, this.a), fitScatter(R, this.b));
+    E.S = s;
+    E.frames = [{ x: r.x + r.w / 2 - 1, y: r.y, w: 2, h: r.h, bw: 2, fill: null, dashed: true, radius: 0, born: 0 }];
+    scatterSpots(L, this.a, s).forEach((p, i) => moveTo(this.L[i], p.x, p.y, 0, 0));
+    scatterSpots(R, this.b, s).forEach((p, i) => moveTo(this.R[i], p.x, p.y, 0, 0));
+  },
+  // Line both piles up in matching rows so you can see which has extra.
+  lineUp(anim) {
+    const r = board(), { a, b } = this, m = Math.max(a, b);
+    let s = MAXS(), cols, bands;
+    for (; s > 3; s -= .5) {
+      const c = s * 1.15;
+      cols = Math.max(1, Math.floor(r.w / c));
+      bands = Math.ceil(m / cols);
+      if (bands * c * 2.6 <= r.h) break;
+    }
+    E.S = s; E.frames = [];
+    const c = s * 1.15, used = Math.min(cols, m);
+    const ox = r.x + (r.w - used * c) / 2, oy = r.y + (r.h - bands * c * 2.6 + c * .6) / 2;
+    const put = (sp, i, row, k) => {
+      const x = ox + (i % cols) * c, y = oy + Math.floor(i / cols) * c * 2.6 + row * c;
+      moveTo(sp, x, y, anim ? k * 12 : 0, anim ? MOVE_MS : 0);
+      if (i >= Math.min(a, b)) sp.hi = true;
+    };
+    this.L.forEach((sp, i) => put(sp, i, 0, i));
+    this.R.forEach((sp, i) => put(sp, i, 1, i));
+  },
+  answer(side) {
+    if (this.done) return;
+    this.done = true;
+    const { a, b } = this;
+    const right = a > b ? "left" : a < b ? "right" : "same";
+    this.lineUp(true);
+    later(() => {
+      const msg = a === b ? `They're the same! ${a} and ${b}.` : `${a > b ? "Left" : "Right"} has ${Math.abs(a - b)} more!`;
+      setPrompt(`Left: <b>${a}</b> · Right: <b>${b}</b>. ${msg}`);
+      nextButton(() => this.round());
+      if (side === right) celebrate(msg + " ⚖️", msg);
+      else encourage(msg);
+    }, MOVE_MS + Math.max(a, b) * 12 + 200);
+  },
+  tap(x) { if (!this.done) this.answer(x < E.W / 2 ? "left" : "right"); },
+  layout() { if (this.done) this.lineUp(false); else this.scatter(); },
+};
+
+/* ---------------- 10. Story time ---------------- */
+const B = n => `<b>${n}</b>`;
+const STORIES = {
+  add: [
+    (a, b) => `${B(a)} ${P()} are playing in the park. ${B(b)} more ${word(b)} ${b === 1 ? "comes" : "come"} to play. How many ${P()} are in the park now?`,
+    (a, b) => `There are ${B(a)} ${P()} at a birthday party. ${B(b)} more ${word(b)} ${b === 1 ? "arrives" : "arrive"}. How many ${P()} are at the party now?`,
+    (a, b) => `${B(a)} ${P()} are waiting for the bus. Then ${B(b)} more ${word(b)} ${b === 1 ? "joins" : "join"} the line. How many ${P()} are waiting now?`,
+  ],
+  sub: [
+    (a, b) => `${B(a)} ${P()} are sitting on a fence. ${B(b)} ${word(b)} ${b === 1 ? "jumps" : "jump"} down and ${b === 1 ? "runs" : "run"} away. How many ${P()} are still on the fence?`,
+    (a, b) => `There are ${B(a)} ${P()} in the garden. ${B(b)} ${b === 1 ? "goes" : "go"} home for dinner. How many ${P()} are left in the garden?`,
+    (a, b) => `${B(a)} ${P()} are playing hide and seek. ${B(b)} of them ${b === 1 ? "hides" : "hide"}. How many ${P()} can you still see?`,
+  ],
+  mul: [
+    (a, b) => `There are ${B(a)} baskets. Each basket has ${B(b)} ${word(b)}. How many ${P()} are there altogether?`,
+    (a, b) => `${B(a)} friends each have ${B(b)} ${word(b)}. How many ${P()} do they have in all?`,
+    (a, b) => `A little train has ${B(a)} cars. Each car carries ${B(b)} ${word(b)}. How many ${P()} are riding the train?`,
+  ],
+};
+ACTS.story = {
+  icon: "📖", title: "Story time", desc: "Little math stories that act themselves out.",
+  up: 10, kinds: { add: true, sub: true, mul: false }, usesPad: true,
+  start() {
+    choice("Up to", [[10, "10"], [20, "20"]], this.up, v => { this.up = v; this.round(); }, 2);
+    const s = side("Stories with");
+    [["add", "+ Adding"], ["sub", "− Taking away"], ["mul", "× Groups of"]].forEach(([k, text]) => {
+      const l = document.createElement("label");
+      l.className = "toggle";
+      l.style.marginBottom = "6px";
+      l.innerHTML = `<input type="checkbox" ${this.kinds[k] ? "checked" : ""}> ${text}`;
+      l.querySelector("input").onchange = e => { this.kinds[k] = e.target.checked; };
+      s.appendChild(l);
+    });
+    sideButton(side(""), "▶ Next story", () => this.round(), "go");
+    this.round();
+  },
+  round() {
+    clearBoard();
+    padOff();
+    this.done = false; this.tries = 0;
+    const kinds = Object.keys(this.kinds).filter(k => this.kinds[k]);
+    const kind = this.kind = pick(kinds.length ? kinds : ["add"]);
+    const up = this.up;
+    if (kind === "add") { this.a = rand(2, up - 2); this.b = rand(1, Math.min(up - this.a, up === 10 ? 5 : 9)); this.ans = this.a + this.b; }
+    if (kind === "sub") { this.a = rand(3, up); this.b = rand(1, this.a - 1); this.ans = this.a - this.b; }
+    if (kind === "mul") { this.a = rand(2, up === 10 ? 4 : 5); this.b = rand(2, up === 10 ? 3 : 5); this.ans = this.a * this.b; }
+    this.tpl = pick(STORIES[kind]);
+    this.render();
+    say(this.tpl(this.a, this.b));
+    this.act();
+  },
+  render(extra = "") {
+    setPrompt(`<div class="story">${this.tpl(this.a, this.b)}</div>${extra}`);
+    if (this.done) nextButton(() => this.round());
+  },
+  // Act the story out on the board.
+  act() {
+    const r = board(), { a, b, kind } = this;
+    this.list = [];
+    let ready;
+    if (kind === "add") {
+      const s = fitScatter(r, a + b); E.S = s;
+      const spots = scatterSpots(r, a + b, s);
+      for (let i = 0; i < a; i++) this.list.push(sprite(spots[i].x, spots[i].y, { delay: i * 60, tint: TINT_A }));
+      later(() => {
+        for (let j = 0; j < b; j++) {
+          const p = spots[a + j], sp = sprite(E.W + 10, p.y, { tint: TINT_B });
+          moveTo(sp, p.x, p.y, j * 250, 900);
+          this.list.push(sp);
+        }
+      }, 2200);
+      ready = 2200 + b * 250 + 900;
+    } else if (kind === "sub") {
+      const s = fitScatter(r, a); E.S = s;
+      const spots = scatterSpots(r, a, s);
+      for (let i = 0; i < a; i++) this.list.push(sprite(spots[i].x, spots[i].y, { delay: i * 60, tint: i < a - b ? TINT_A : TINT_OFF }));
+      later(() => {
+        const go = this.list.splice(a - b);
+        go.forEach((sp, j) => leave(sp, E.W + E.S * 2, sp.ty, j * 250, 1000));
+      }, 2200);
+      ready = 2200 + b * 250 + 1000;
+    } else {
+      const s = fitGroups(r, a * b, b, MAXS(), { nf: a }); E.S = s;
+      const G = groupLayout(r, a * b, b, s, { nf: a });
+      G.boxes.forEach((f, g) => frame({ ...f, delay: g * 700 }));
+      for (let i = 0; i < a * b; i++) {
+        const g = Math.floor(i / b), p = G.spot(i);
+        this.list.push(sprite(p.x, p.y, { delay: g * 700 + (i % b) * 80 + 200, tint: PALETTE[g % PALETTE.length], ci: g }));
+      }
+      ready = a * 700 + b * 80 + 300;
+    }
+    later(() => { if (!this.done) padOn(g => this.check(g)); }, reduceMotion ? 0 : ready);
+  },
+  check(g) {
+    if (this.done) return;
+    const sign = { add: "+", sub: "−", mul: "×" }[this.kind];
+    const eq = `${this.a} ${sign} ${this.b} = ${this.ans}`;
+    if (g === this.ans) {
+      this.done = true;
+      padOff();
+      this.render(`<div class="row"><span class="seq">${eq}</span></div>`);
+      this.finish(() => celebrate(`${this.ans}! That's right! 🎉`, `${this.ans}! That's right!`));
+    } else if (++this.tries >= 2) {
+      this.done = true;
+      padOff();
+      this.render(`<div class="row">The answer is <span class="seq">${eq}</span></div>`);
+      this.finish(() => encourage(`The answer is ${this.ans}.`));
+    } else {
+      padClear();
+      encourage(`Not quite! Count the ${P()} and try again.`);
+    }
+  },
+  finish(then) {
+    const live = this.list.filter(s => !s.die);
+    const t = this.kind === "mul" ? 0 : arrangeTens(live, true);
+    countUp(live, { delay: t + 150, done: then });
+  },
+  layout() {
+    if (this.done) { if (this.kind !== "mul") arrangeTens(this.list.filter(s => !s.die), false); return; }
+    clearBoard();   // replay the story to fit the new size
+    this.act();
+  },
+};
+
+/* =====================================================================
+   Wiring it together
+   ===================================================================== */
+let act = null;
+function openActivity(id) {
+  if (act && act.stop) act.stop();
+  clearBoard();
+  stopSpeaking();
+  $("banner").className = "banner";
+  act = ACTS[id];
+  bigItems = id !== "count";
+  imgCache.clear();
+  $("actTitle").textContent = act.icon + " " + act.title;
+  $("actControls").innerHTML = "";
+  setPrompt("");
+  padOff();
+  padShow(!!act.usesPad);
+  $("home").hidden = true;
+  resizeCanvas();
+  act.start();
 }
 
-/* ---------------- Counting out loud ---------------- */
-function stopSpeaking() { if ("speechSynthesis" in window) speechSynthesis.cancel(); }
-function say(n) {
-  if (!$("speak").checked || !("speechSynthesis" in window)) return;
-  stopSpeaking();
-  speechSynthesis.speak(new SpeechSynthesisUtterance(String(n)));
+// Home screen
+for (const [id, a] of Object.entries(ACTS)) {
+  const c = document.createElement("button");
+  c.className = "card";
+  c.innerHTML = `<div class="ic">${a.icon}</div><div class="t">${a.title}</div><div class="d">${a.desc}</div>`;
+  c.onclick = () => openActivity(id);
+  $("cards").appendChild(c);
 }
-function countAloud(n) {
-  if (!$("speak").checked || !("speechSynthesis" in window)) return;
-  stopSpeaking();
-  if (n > 30) return say(n);   // counting every number is fun up to 30
-  for (let i = 1; i <= n; i++) {
-    const u = new SpeechSynthesisUtterance(String(i));
-    u.rate = 1.1;
-    speechSynthesis.speak(u);
-  }
-}
+$("homeBtn").onclick = () => { $("home").hidden = false; stopSpeaking(); };
 
-markMode();
-setCount(getN());
+// Item picker
+for (const it of ITEMS) {
+  const b = document.createElement("button");
+  b.className = "chip";
+  b.title = it.label;
+  b.setAttribute("aria-label", it.label);
+  b.setAttribute("aria-pressed", it === item);
+  if (it.emoji) b.textContent = it.emoji;
+  else {
+    const c = document.createElement("canvas");
+    c.width = c.height = 64;
+    c.style.width = c.style.height = "30px";
+    drawShape(c.getContext("2d"), it, 64, PALETTE[1]);
+    b.appendChild(c);
+  }
+  b.onclick = () => {
+    item = it;
+    document.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", c === b));
+    imgCache.clear();
+    kick();
+    if (act && act.itemChanged) act.itemChanged();
+    else if (act && act.render && act.tpl) act.render(act.done ? $("prompt").querySelector(".row")?.outerHTML || "" : "");
+  };
+  $("chips").appendChild(b);
+}
+$("speak").onchange = () => { if (!$("speak").checked) stopSpeaking(); };
+
+// Taps on the board go to the current activity.
+canvas.addEventListener("click", e => {
+  if (!act || !act.tap) return;
+  const r = canvas.getBoundingClientRect();
+  act.tap(e.clientX - r.left, e.clientY - r.top);
+});
+
+new ResizeObserver(() => { if (resizeCanvas() && act && act.layout) { act.layout(false); kick(); } }).observe(wrap);
+
+openActivity("count");
+$("home").hidden = false;
 </script>
 </body>
 </html>
