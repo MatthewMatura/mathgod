@@ -4,52 +4,76 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Count With Me</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #fff8ec;
-    --panel: #ffffff;
-    --ink: #2b2a33;
-    --muted: #6b6878;
-    --accent: #ff7a59;
+    --bg1: #fff1a8;
+    --bg2: #ffd1e6;
+    --bg3: #bdeeff;
+    --panel: rgba(255, 255, 255, .9);
+    --ink: #3b2466;
+    --muted: #7b6a9b;
+    --accent: #ff4f8b;
     --accent-ink: #ffffff;
-    --good: #2fa866;
-    --frame: #fde7c8;
-    --frame-line: #f3c98f;
-    --chip: #f4efe6;
-    --chip-on: #2b2a33;
-    --counted: #7bd389;
-    --hi: #ffb703;
+    --purple: #7c4dff;
+    --sun: #ffc93c;
+    --sky: #2fb8ff;
+    --mint: #20c997;
+    --orange: #ff8a3d;
+    --good: #12b76a;
+    --bad: #ef4565;
+    --frame: #fff4c2;
+    --frame-line: #ffc93c;
+    --counted: #7be495;
+    --hi: #ffb000;
+    --side1: #7c4dff;
+    --side2: #ff4f8b;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #1d1c24;
-      --panel: #2a2933;
-      --ink: #f4f2fa;
-      --muted: #aaa6bb;
-      --good: #5fd394;
-      --frame: #34323f;
-      --frame-line: #4a475a;
-      --chip: #34323f;
-      --chip-on: #ffd36e;
+      --bg1: #2b1d5c;
+      --bg2: #4a1f5e;
+      --bg3: #123a5e;
+      --panel: rgba(40, 28, 78, .92);
+      --ink: #fff7fb;
+      --muted: #cbbdf0;
+      --frame: #3d2f72;
+      --frame-line: #ffc93c;
+      --side1: #4b2aa8;
+      --side2: #a8235e;
     }
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; }
   body {
-    background: var(--bg);
+    background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 50%, var(--bg3) 100%);
     color: var(--ink);
-    font-family: "Trebuchet MS", "Avenir Next", system-ui, sans-serif;
+    font-family: "Fredoka", "Trebuchet MS", "Avenir Next", system-ui, sans-serif;
     display: flex;
     overflow: hidden;
   }
-  button { font-family: inherit; color: inherit; }
+  button { font-family: inherit; color: inherit; -webkit-tap-highlight-color: transparent; }
+  /* chunky, squishy buttons */
+  .home-btn, .step, .chip, .grp, .pbtn, .pad button, .arrow, .equals, .card {
+    transition: transform .12s ease, box-shadow .12s ease, filter .12s;
+  }
+  .home-btn:active, .step:active, .chip:active, .grp:active, .pbtn:active, .pad button:active, .arrow:active, .equals:active {
+    transform: translateY(3px) scale(.95);
+    box-shadow: 0 1px 0 rgba(0,0,0,.18) !important;
+  }
+  @media (hover: hover) {
+    .step:hover, .chip:hover, .grp:hover, .pbtn:hover, .pad button:hover, .arrow:hover, .equals:hover, .home-btn:hover { filter: brightness(1.06); transform: translateY(-2px); }
+  }
 
   /* ---------- Sidebar ---------- */
   aside {
     width: 250px;
     flex: none;
-    background: var(--panel);
-    box-shadow: 2px 0 10px rgba(0,0,0,.06);
+    background: linear-gradient(180deg, var(--side1), var(--side2));
+    color: #fff;
+    box-shadow: 4px 0 18px rgba(80, 30, 140, .25);
     padding: 14px 14px 18px;
     overflow-y: auto;
     display: flex;
@@ -58,193 +82,251 @@
     z-index: 2;
   }
   .home-btn {
-    height: 42px; border: none; border-radius: 12px;
-    background: var(--chip); font-size: 17px; font-weight: bold; cursor: pointer;
+    height: 44px; border: none; border-radius: 999px;
+    background: #fff; color: var(--purple);
+    font-size: 17px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,.18);
   }
-  #actTitle { margin: 0; font-size: 22px; text-align: center; }
-  h2 { margin: 0 0 8px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  #actTitle { margin: 0; font-size: 24px; text-align: center; font-weight: 700; text-shadow: 0 2px 0 rgba(0,0,0,.15); }
+  h2 { margin: 0 0 8px; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: rgba(255,255,255,.85); font-weight: 600; }
   #actControls { display: flex; flex-direction: column; gap: 16px; }
   .numbox {
     width: 100%;
-    font-size: 44px;
-    font-weight: bold;
+    font-size: 44px; font-weight: 700;
     text-align: center;
     padding: 4px 6px;
-    border: 3px solid var(--frame-line);
-    border-radius: 16px;
-    background: var(--bg);
-    color: var(--ink);
+    border: 4px solid var(--sun);
+    border-radius: 20px;
+    background: #fff; color: #3b2466;
     font-family: inherit;
+    box-shadow: 0 4px 0 rgba(0,0,0,.15);
   }
-  .numbox:focus, .tile:focus { outline: none; border-color: var(--accent); }
+  .numbox:focus, .tile:focus { outline: none; border-color: var(--sky); }
   input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
   input[type=number] { -moz-appearance: textfield; }
-  .steps { display: flex; gap: 10px; justify-content: center; margin-top: 10px; }
+  .steps { display: flex; gap: 12px; justify-content: center; margin-top: 12px; }
   .step {
-    width: 56px; height: 56px;
-    border-radius: 50%;
-    border: none;
-    background: var(--accent);
-    color: var(--accent-ink);
-    font-size: 32px;
-    font-weight: bold;
-    cursor: pointer;
-    line-height: 1;
+    width: 58px; height: 58px; border-radius: 50%; border: none;
+    background: var(--sun); color: #3b2466;
+    font-size: 34px; font-weight: 700; cursor: pointer; line-height: 1;
+    box-shadow: 0 5px 0 #d99a00;
   }
-  .step:active, .chip:active, .grp:active, .pbtn:active, .pad button:active, .arrow:active, .equals:active { transform: scale(.92); }
+  .step + .step { background: var(--mint); color: #fff; box-shadow: 0 5px 0 #0f9670; }
   .chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(48px, 1fr)); gap: 8px; }
   .chip {
-    font-size: 28px;
-    height: 52px;
-    border-radius: 14px;
-    border: none;
-    background: var(--chip);
+    font-size: 28px; height: 52px;
+    border-radius: 16px; border: none;
+    background: rgba(255,255,255,.9);
     cursor: pointer;
     display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 0 rgba(0,0,0,.15);
   }
-  .chip[aria-pressed="true"] { background: var(--chip-on); box-shadow: 0 0 0 3px var(--accent); }
+  .chip[aria-pressed="true"] { background: var(--sun); box-shadow: 0 4px 0 #d99a00, 0 0 0 3px #fff; animation: wiggle .5s; }
   .groups { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .grp {
-    min-height: 46px;
-    padding: 4px 6px;
-    border-radius: 12px;
-    border: none;
-    background: var(--chip);
-    color: var(--ink);
-    font-weight: bold;
-    font-size: 19px;
-    cursor: pointer;
+    min-height: 46px; padding: 4px 6px;
+    border-radius: 16px; border: none;
+    background: rgba(255,255,255,.92); color: #3b2466;
+    font-weight: 700; font-size: 19px; cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,.15);
   }
   .grp.mix { grid-column: 1 / -1; font-size: 18px; }
-  .grp[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+  .grp[aria-pressed="true"] { background: var(--sun); color: #3b2466; box-shadow: 0 4px 0 #d99a00, 0 0 0 3px #fff; }
   .grp.wide { width: 100%; font-size: 18px; }
-  .grp.wide + .grp.wide { margin-top: 8px; }
-  .grp.go { background: var(--accent); color: var(--accent-ink); }
-  .speed { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 20px; }
-  .speed input { flex: 1; min-width: 0; accent-color: var(--accent); height: 28px; }
-  .toggle { display: flex; align-items: center; gap: 8px; font-size: 17px; color: var(--muted); cursor: pointer; }
-  .toggle input { width: 20px; height: 20px; accent-color: var(--accent); flex: none; }
-  .hint { margin: 8px 0 0; color: var(--muted); font-size: 14px; line-height: 1.35; }
+  .grp.wide + .grp.wide { margin-top: 10px; }
+  .grp.go { background: linear-gradient(135deg, #ffd23f, #ff9a3d); color: #3b2466; box-shadow: 0 4px 0 #d9731a; }
+  .speed { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 22px; }
+  .speed input { flex: 1; min-width: 0; accent-color: var(--sun); height: 28px; }
+  .toggle { display: flex; align-items: center; gap: 8px; font-size: 17px; color: #fff; cursor: pointer; font-weight: 600; }
+  .toggle input { width: 22px; height: 22px; accent-color: var(--sun); flex: none; }
+  .hint { margin: 8px 0 0; color: rgba(255,255,255,.9); font-size: 14px; line-height: 1.35; }
 
   /* ---------- Main area ---------- */
-  main { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
-  .top { flex: none; display: flex; align-items: center; gap: 10px; padding: 10px 14px 4px; }
+  main { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+  .top { flex: none; display: flex; align-items: center; gap: 10px; padding: 10px 14px 4px; position: relative; z-index: 1; }
   .prompt {
-    flex: 1; min-width: 0;
-    min-height: 44px;
+    flex: 1; min-width: 0; min-height: 44px;
     display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
     gap: 8px 12px;
     text-align: center;
-    font-size: 22px;
+    font-size: 24px; font-weight: 600;
     line-height: 1.35;
   }
-  .prompt b { color: var(--accent); }
+  .prompt b { color: var(--accent); font-size: 1.15em; }
   .prompt .tapped { color: var(--muted); font-size: 18px; }
-  .prompt .line { width: 100%; }
+  .prompt .line { width: 100%; animation: rise .35s ease backwards; }
   .prompt .story { max-width: 780px; margin: 0 auto; }
-  .prompt .row { width: 100%; display: flex; flex-wrap: wrap; gap: 8px 12px; justify-content: center; align-items: center; }
-  .score { flex: none; font-size: 20px; font-weight: bold; white-space: nowrap; }
+  .prompt .row { width: 100%; display: flex; flex-wrap: wrap; gap: 8px 12px; justify-content: center; align-items: center; animation: rise .35s ease backwards; }
+  .prompt .explain { display: block; font-size: 19px; font-weight: 500; max-width: 760px; margin: 0 auto;
+    background: var(--panel); border-radius: 18px; padding: 8px 14px; box-shadow: 0 4px 14px rgba(80,30,140,.12); }
+  .prompt .explain b { font-size: 1.05em; }
+  .prompt .cheer { font-weight: 700; color: var(--good); font-size: 22px; }
+  .score {
+    flex: none; font-size: 20px; font-weight: 700; white-space: nowrap;
+    background: linear-gradient(135deg, #ffe066, #ffb703); color: #3b2466;
+    padding: 6px 14px; border-radius: 999px; box-shadow: 0 4px 0 #d99a00;
+  }
+  .score.bump { animation: bump .6s cubic-bezier(.3,1.8,.5,1); }
   #wrap { flex: 1; min-height: 0; position: relative; }
-  #board { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: manipulation; cursor: pointer; }
+  #board { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: manipulation; cursor: pointer; z-index: 1; }
+  /* floating bubbles behind the board */
+  .sky { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+  .sky span {
+    position: absolute; bottom: -120px; border-radius: 50%; opacity: .35;
+    animation: floatUp linear infinite;
+  }
   .banner {
-    position: absolute; left: 50%; top: 10px;
-    transform: translate(-50%, 0) scale(.6);
+    position: absolute; left: 50%; top: 10px; z-index: 3;
+    transform: translate(-50%, 0) scale(.4) rotate(-6deg);
     opacity: 0; pointer-events: none;
-    background: var(--panel);
-    padding: 14px 26px; border-radius: 22px;
-    font-size: 34px; font-weight: bold; text-align: center;
-    box-shadow: 0 10px 34px rgba(0,0,0,.18);
-    transition: opacity .25s, transform .35s cubic-bezier(.3,1.6,.6,1);
+    padding: 14px 30px; border-radius: 28px;
+    font-size: 36px; font-weight: 700; text-align: center; color: #fff;
+    text-shadow: 0 2px 0 rgba(0,0,0,.18);
+    box-shadow: 0 12px 30px rgba(80,30,140,.3);
+    transition: opacity .25s, transform .45s cubic-bezier(.3,1.8,.5,1);
     max-width: 92%;
   }
-  .banner.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
-  .banner.good { color: var(--good); }
-  .banner.soft { color: var(--accent); }
+  .banner.show { opacity: 1; transform: translate(-50%, 0) scale(1) rotate(0); }
+  .banner.good { background: linear-gradient(135deg, #20c997, #12b76a 50%, #2fb8ff); }
+  .banner.soft { background: linear-gradient(135deg, #ff9a3d, #ff4f8b); }
 
   /* Prompt buttons and equation tiles */
   .pbtn {
-    min-height: 50px; padding: 0 20px;
-    border-radius: 14px; border: none;
-    background: var(--chip); color: var(--ink);
-    font-size: 22px; font-weight: bold; cursor: pointer;
+    min-height: 52px; padding: 0 22px;
+    border-radius: 999px; border: none;
+    background: #fff; color: var(--purple);
+    font-size: 22px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 5px 0 rgba(80,30,140,.25);
   }
-  .pbtn.go { background: var(--accent); color: var(--accent-ink); }
+  .pbtn:nth-child(3n+1) { background: var(--sky); color: #fff; box-shadow: 0 5px 0 #1489c9; }
+  .pbtn:nth-child(3n+2) { background: var(--purple); color: #fff; box-shadow: 0 5px 0 #5428c9; }
+  .pbtn:nth-child(3n) { background: var(--mint); color: #fff; box-shadow: 0 5px 0 #0f9670; }
+  .pbtn.go { background: linear-gradient(135deg, #ff6fa3, #ff4f8b); color: #fff; box-shadow: 0 5px 0 #c92a63; animation: nudge 1.6s ease-in-out infinite; }
   .eq { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; }
   .num { display: flex; flex-direction: column; align-items: center; gap: 4px; }
   .arrow {
-    width: 70px; height: 32px; border: none; border-radius: 10px;
-    background: var(--chip); font-size: 17px; cursor: pointer;
+    width: 70px; height: 32px; border: none; border-radius: 999px;
+    background: #fff; color: var(--purple); font-size: 16px; cursor: pointer;
+    box-shadow: 0 3px 0 rgba(80,30,140,.25);
   }
   .tile {
-    min-width: 84px; height: 64px; padding: 0 8px;
-    font-size: 38px; font-weight: bold; text-align: center;
-    border-radius: 14px; border: 3px solid var(--frame-line);
-    background: var(--bg); color: var(--ink); font-family: inherit;
+    min-width: 84px; height: 66px; padding: 0 8px;
+    font-size: 40px; font-weight: 700; text-align: center;
+    border-radius: 20px; border: 4px solid var(--sun);
+    background: #fff; color: #3b2466; font-family: inherit;
     display: inline-flex; align-items: center; justify-content: center; flex-direction: column; line-height: 1;
+    box-shadow: 0 5px 0 rgba(80,30,140,.18);
   }
   input.tile { width: 84px; }
   .tile.a { border-color: #ff7a59; }
   .tile.b { border-color: #4fa3ff; }
-  .tile small { font-size: 13px; font-weight: normal; color: var(--muted); margin-top: 2px; }
-  .opsign { font-size: 40px; font-weight: bold; }
+  .tile.res { border-style: dashed; border-color: var(--purple); }
+  .tile small { font-size: 13px; font-weight: 500; color: var(--muted); margin-top: 2px; }
+  .tile.right { border-style: solid; border-color: var(--good); color: var(--good); background: #e3fbef; animation: bump .6s cubic-bezier(.3,1.8,.5,1); }
+  .tile.wrong { border-style: solid; border-color: var(--bad); color: var(--bad); background: #ffe8ed; animation: shake .45s; }
+  .opsign { font-size: 44px; font-weight: 700; color: var(--purple); }
   .equals {
-    width: 64px; height: 64px; border-radius: 50%; border: none;
-    background: var(--accent); color: var(--accent-ink);
-    font-size: 40px; font-weight: bold; cursor: pointer; line-height: 1;
+    width: 66px; height: 66px; border-radius: 50%; border: none;
+    background: linear-gradient(135deg, #ff6fa3, #7c4dff); color: #fff;
+    font-size: 42px; font-weight: 700; cursor: pointer; line-height: 1;
+    box-shadow: 0 5px 0 #5428c9;
+    animation: glow 1.8s ease-in-out infinite;
   }
-  .seq { font-weight: bold; color: var(--accent); }
+  .seq { font-weight: 700; color: var(--accent); }
 
-  /* Number pad */
+  /* Number pad: a rainbow of chunky buttons */
   .pad {
-    flex: none;
+    flex: none; position: relative; z-index: 1;
     display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
     gap: 8px; padding: 10px 12px 14px;
-    background: var(--panel); box-shadow: 0 -2px 10px rgba(0,0,0,.06);
+    background: var(--panel); box-shadow: 0 -4px 16px rgba(80,30,140,.12);
   }
   .pad[hidden] { display: none; }
-  .pad.off button { opacity: .4; pointer-events: none; }
+  .pad.off button { opacity: .35; pointer-events: none; }
   .pad .shown {
     min-width: 110px; height: 56px; padding: 0 12px;
-    border-radius: 14px; border: 3px solid var(--frame-line);
-    font-size: 34px; font-weight: bold;
+    border-radius: 18px; border: 4px dashed var(--purple);
+    font-size: 34px; font-weight: 700;
     display: flex; align-items: center; justify-content: center;
-    background: var(--bg);
+    background: #fff; color: #3b2466;
   }
+  .pad.bare .shown { display: none; }
   .pad button {
-    width: 56px; height: 56px; border-radius: 14px; border: none;
-    background: var(--chip); font-size: 26px; font-weight: bold; cursor: pointer;
+    width: 56px; height: 56px; border-radius: 18px; border: none;
+    font-size: 28px; font-weight: 700; cursor: pointer; color: #fff;
+    text-shadow: 0 1px 0 rgba(0,0,0,.2);
   }
-  .pad .ok { width: 84px; background: var(--good); color: #fff; }
+  .pad button:nth-of-type(6n+1) { background: #ff5d8f; box-shadow: 0 4px 0 #c92a63; }
+  .pad button:nth-of-type(6n+2) { background: #ff9a3d; box-shadow: 0 4px 0 #d9731a; }
+  .pad button:nth-of-type(6n+3) { background: #ffc93c; box-shadow: 0 4px 0 #d99a00; color: #3b2466; text-shadow: none; }
+  .pad button:nth-of-type(6n+4) { background: #20c997; box-shadow: 0 4px 0 #0f9670; }
+  .pad button:nth-of-type(6n+5) { background: #2fb8ff; box-shadow: 0 4px 0 #1489c9; }
+  .pad button:nth-of-type(6n)   { background: #9b6bff; box-shadow: 0 4px 0 #5428c9; }
+  .pad button[data-d="back"] { background: #fff; color: var(--purple); box-shadow: 0 4px 0 rgba(80,30,140,.25); text-shadow: none; }
+  .pad .ok { width: 84px; background: linear-gradient(135deg, #20c997, #12b76a) !important; box-shadow: 0 4px 0 #0b7d4a !important; }
 
   /* Home screen */
   .home {
     position: fixed; inset: 0; z-index: 10;
-    background: var(--bg); overflow-y: auto;
-    padding: 24px 16px 32px;
+    background: linear-gradient(135deg, var(--bg1), var(--bg2) 50%, var(--bg3));
+    overflow-y: auto; padding: 24px 16px 32px;
   }
   .home[hidden] { display: none; }
-  .home h1 { text-align: center; font-size: 36px; margin: 4px 0 6px; }
-  .home p.sub { text-align: center; color: var(--muted); font-size: 18px; margin: 0 0 22px; }
-  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; max-width: 1040px; margin: 0 auto; }
+  .home .sky { position: fixed; }
+  .home h1 { position: relative; text-align: center; font-size: 54px; margin: 4px 0 4px; letter-spacing: 1px; }
+  .home h1 span { display: inline-block; animation: hop 2.4s ease-in-out infinite; text-shadow: 0 4px 0 rgba(0,0,0,.12); }
+  .home p.sub { position: relative; text-align: center; color: var(--ink); font-size: 22px; margin: 0 0 22px; font-weight: 600; }
+  .cards { position: relative; display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 16px; max-width: 1040px; margin: 0 auto; }
   .card {
-    background: var(--panel); border: none; border-radius: 20px;
-    padding: 18px; text-align: left; cursor: pointer;
-    box-shadow: 0 3px 12px rgba(0,0,0,.07);
-    transition: transform .15s;
+    border: none; border-radius: 26px; padding: 18px; text-align: left; cursor: pointer;
+    color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,.15);
+    box-shadow: 0 6px 0 rgba(0,0,0,.15), 0 10px 24px rgba(80,30,140,.18);
+    animation: popIn .5s cubic-bezier(.3,1.6,.5,1) backwards;
   }
-  .card:hover { transform: translateY(-3px); }
-  .card .ic { font-size: 46px; line-height: 1; }
-  .card .t { font-size: 22px; font-weight: bold; margin: 10px 0 4px; }
-  .card .d { color: var(--muted); font-size: 15px; line-height: 1.35; }
+  .card:hover { transform: translateY(-4px) rotate(-1.5deg) scale(1.03); }
+  .card:active { transform: scale(.96); }
+  .card .ic {
+    font-size: 44px; line-height: 1; width: 72px; height: 72px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,.9); text-shadow: none;
+    animation: bob 2.2s ease-in-out infinite;
+  }
+  .card .t { font-size: 24px; font-weight: 700; margin: 12px 0 4px; }
+  .card .d { font-size: 15px; line-height: 1.35; opacity: .95; font-weight: 500; }
+  .card:nth-child(10n+1) { background: linear-gradient(135deg, #ff6fa3, #ff4f8b); }
+  .card:nth-child(10n+2) { background: linear-gradient(135deg, #9b6bff, #6a3df0); }
+  .card:nth-child(10n+3) { background: linear-gradient(135deg, #3fd0ff, #1e9bff); }
+  .card:nth-child(10n+4) { background: linear-gradient(135deg, #ffcf3f, #ff9a3d); }
+  .card:nth-child(10n+5) { background: linear-gradient(135deg, #2fe0b0, #12b76a); }
+  .card:nth-child(10n+6) { background: linear-gradient(135deg, #ff8a5c, #ff4f5e); }
+  .card:nth-child(10n+7) { background: linear-gradient(135deg, #c86bff, #ff4fbf); }
+  .card:nth-child(10n+8) { background: linear-gradient(135deg, #4dd9c4, #2f8bff); }
+  .card:nth-child(10n+9) { background: linear-gradient(135deg, #ffb13f, #ff6f3d); }
+  .card:nth-child(10n)   { background: linear-gradient(135deg, #7c8bff, #9b4dff); }
+
+  /* Animations */
+  @keyframes hop { 0%, 60%, 100% { transform: translateY(0) rotate(0); } 30% { transform: translateY(-14px) rotate(-6deg); } }
+  @keyframes bob { 0%, 100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-6px) rotate(4deg); } }
+  @keyframes popIn { from { opacity: 0; transform: scale(.5) translateY(30px); } to { opacity: 1; transform: none; } }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @keyframes bump { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 100% { transform: scale(1); } }
+  @keyframes wiggle { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-10deg); } 75% { transform: rotate(10deg); } }
+  @keyframes shake { 20%, 60% { transform: translateX(-7px); } 40%, 80% { transform: translateX(7px); } }
+  @keyframes glow { 0%, 100% { box-shadow: 0 5px 0 #5428c9, 0 0 0 0 rgba(255,79,139,.5); } 50% { box-shadow: 0 5px 0 #5428c9, 0 0 0 10px rgba(255,79,139,0); } }
+  @keyframes nudge { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+  @keyframes floatUp { from { transform: translateY(0) translateX(0); } 50% { transform: translateY(-60vh) translateX(30px); } to { transform: translateY(-130vh) translateX(-20px); } }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
 
   /* Phones */
   @media (max-width: 600px) {
     aside { width: 132px; padding: 10px 8px 14px; gap: 12px; }
     #actControls { gap: 12px; }
     .home-btn { font-size: 13px; height: 38px; }
-    #actTitle { font-size: 16px; }
+    #actTitle { font-size: 17px; }
     h2 { font-size: 11px; }
-    .numbox { font-size: 26px; border-radius: 12px; padding: 4px 2px; }
+    .numbox { font-size: 26px; border-radius: 14px; padding: 4px 2px; border-width: 3px; }
     .step { width: 46px; height: 46px; font-size: 26px; }
     .steps { gap: 8px; }
     .chips { grid-template-columns: repeat(2, 1fr); gap: 6px; }
@@ -255,25 +337,27 @@
     .toggle { font-size: 14px; }
     .hint { font-size: 12px; }
     .top { padding: 8px 8px 2px; gap: 6px; }
-    .prompt { font-size: 16px; gap: 6px 8px; }
-    .score { font-size: 15px; }
-    .pbtn { min-height: 42px; padding: 0 12px; font-size: 16px; }
-    .arrow { width: 48px; height: 26px; font-size: 13px; }
-    .tile { min-width: 44px; height: 44px; font-size: 22px; border-radius: 10px; border-width: 2px; padding: 0 4px; }
+    .prompt { font-size: 17px; gap: 6px 8px; }
+    .prompt .explain { font-size: 14px; padding: 6px 10px; }
+    .prompt .cheer { font-size: 16px; }
+    .score { font-size: 14px; padding: 4px 8px; }
+    .pbtn { min-height: 42px; padding: 0 14px; font-size: 16px; }
+    .tile { min-width: 44px; height: 44px; font-size: 22px; border-radius: 12px; border-width: 3px; padding: 0 4px; }
     input.tile { width: 44px; }
-    .arrow { width: 44px; }
-    .opsign { font-size: 20px; }
-    .equals { width: 38px; height: 38px; font-size: 24px; }
+    .arrow { width: 44px; height: 26px; font-size: 12px; }
+    .opsign { font-size: 22px; }
+    .equals { width: 40px; height: 40px; font-size: 26px; }
     .eq { gap: 4px; }
     .pad { gap: 6px; padding: 8px 6px 10px; }
     .pad .shown { min-width: 80px; height: 46px; font-size: 26px; }
     .pad button { width: 44px; height: 46px; font-size: 22px; }
     .pad .ok { width: 60px; }
     .banner { font-size: 22px; padding: 10px 16px; }
-    .home h1 { font-size: 26px; }
+    .home h1 { font-size: 34px; }
+    .home p.sub { font-size: 17px; }
     .cards { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-    .card { padding: 12px; }
-    .card .ic { font-size: 34px; }
+    .card { padding: 12px; border-radius: 20px; }
+    .card .ic { font-size: 30px; width: 52px; height: 52px; }
     .card .t { font-size: 17px; }
     .card .d { font-size: 13px; }
   }
@@ -288,7 +372,10 @@
     <h2>Things</h2>
     <div class="chips" id="chips" role="group" aria-label="Choose what to count"></div>
   </section>
-  <label class="toggle"><input type="checkbox" id="speak"> Talk out loud</label>
+  <div>
+    <label class="toggle"><input type="checkbox" id="sounds" checked> Sounds</label>
+    <label class="toggle" style="margin-top:8px"><input type="checkbox" id="speak"> Talk out loud</label>
+  </div>
 </aside>
 <main>
   <div class="top">
@@ -296,13 +383,15 @@
     <div class="score" id="score" title="Stars earned">⭐ 0</div>
   </div>
   <div id="wrap">
+    <div class="sky" aria-hidden="true"></div>
     <canvas id="board" aria-label="Board"></canvas>
     <div class="banner" id="banner" aria-live="assertive"></div>
   </div>
   <div class="pad" id="pad" hidden></div>
 </main>
 <div class="home" id="home">
-  <h1>Count With Me</h1>
+  <div class="sky" aria-hidden="true"></div>
+  <h1 id="homeTitle">Count With Me</h1>
   <p class="sub">Pick something to play!</p>
   <div class="cards" id="cards"></div>
 </div>
@@ -336,6 +425,8 @@ const ITEMS = [
 const GROUPS = { 2: [2, 1], 3: [3, 1], 4: [2, 2], 5: [5, 1], 10: [5, 2], 100: [10, 10] };
 const PALETTE = ["#ff7a59", "#4fa3ff", "#7bd389", "#ffcc4d", "#b48cff", "#ff8fc7", "#4dd0c4", "#ffa94d"];
 const TINT_A = "#ff7a59", TINT_B = "#4fa3ff", TINT_OFF = "#9e9ab0";
+// [fill, outline] for the boxes, so every group gets its own bright colour
+const FRAME_TINTS = [["#fff3b8", "#ffc21a"], ["#ffe0ee", "#ff5d9e"], ["#dcf4ff", "#2fb0ff"], ["#dcfaee", "#1fc78f"], ["#efe4ff", "#935dff"], ["#ffe7d4", "#ff8a3d"]];
 
 let item = ITEMS[0];
 const rand = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
@@ -484,21 +575,34 @@ function stepMoving(dt) {
 }
 
 // --- confetti ---
+const CONFETTI = ["#ff4f8b", "#ffc93c", "#2fb8ff", "#20c997", "#9b6bff", "#ff8a3d", "#ff6fd8"];
 function confetti() {
   if (reduceMotion) return;
-  for (let i = 0; i < 90; i++) {
+  for (let i = 0; i < 150; i++) {
     E.parts.push({
-      x: Math.random() * E.W, y: -10 - Math.random() * E.H * 0.3,
+      x: Math.random() * E.W, y: -10 - Math.random() * E.H * 0.35,
       vx: (Math.random() - .5) * .25, vy: .12 + Math.random() * .25,
       r: Math.random() * 6, vr: (Math.random() - .5) * .02,
-      c: pick(PALETTE), w: 7 + Math.random() * 6, life: 2400,
+      c: pick(CONFETTI), w: 8 + Math.random() * 7, round: Math.random() < .3, life: 2600,
     });
+  }
+  // a burst of stars from the middle
+  const cx = E.W / 2, cy = E.H * 0.45;
+  for (let i = 0; i < 18; i++) {
+    const ang = (i / 18) * Math.PI * 2 + Math.random() * .3, sp = .3 + Math.random() * .35;
+    E.parts.push({ x: cx, y: cy, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp - .15, r: 0, vr: (Math.random() - .5) * .01,
+      emoji: pick(["⭐", "🌟", "✨", "💖", "🎉"]), w: 26 + Math.random() * 18, life: 1500, burst: true });
   }
   kick();
 }
 function stepParts(dt) {
-  for (const p of E.parts) { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += .0004 * dt; p.r += p.vr * dt; p.life -= dt; }
-  E.parts = E.parts.filter(p => p.life > 0 && p.y < E.H + 20);
+  for (const p of E.parts) {
+    p.x += p.vx * dt; p.y += p.vy * dt;
+    p.vy += (p.burst ? .0005 : .0004) * dt;
+    if (p.burst) { p.vx *= .985; }
+    p.r += p.vr * dt; p.life -= dt;
+  }
+  E.parts = E.parts.filter(p => p.life > 0 && p.y < E.H + 40);
 }
 
 // --- sizing ---
@@ -558,7 +662,7 @@ function drawShape(g, it, px, color) {
 
 // --- drawing ---
 function rr(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect(x, y, w, h, Math.max(0, r)); }
-const FONT = '"Trebuchet MS","Avenir Next",system-ui,sans-serif';
+const FONT = '"Fredoka","Trebuchet MS","Avenir Next",system-ui,sans-serif';
 
 function draw(t) {
   ctx.setTransform(E.dpr, 0, 0, E.dpr, 0, 0);
@@ -569,27 +673,29 @@ function draw(t) {
   const s = E.S;
 
   // boxes
-  for (const f of E.frames) {
+  E.frames.forEach((f, k) => {
     const a = (f.born ? clamp01((t - f.born) / 350) : 1) * (f.alpha ?? 1) * (f.noVeil ? 1 : va);
-    if (a <= 0) continue;
+    if (a <= 0) return;
+    const tint = FRAME_TINTS[k % FRAME_TINTS.length];
     ctx.globalAlpha = a;
-    const bw = f.bw || 2;
-    rr(f.x + bw / 2, f.y + bw / 2, f.w - bw, f.h - bw, f.radius ?? Math.max(4, s * 0.22));
-    if (f.fill !== null) { ctx.fillStyle = f.fill || cFrame; ctx.fill(); }
-    ctx.lineWidth = f.hi ? Math.max(3, bw * 2) : bw;
-    ctx.strokeStyle = f.hi ? cAccent : (f.stroke || cLine);
+    const bw = Math.max(2, (f.bw || 2) * 1.4);
+    rr(f.x + bw / 2, f.y + bw / 2, f.w - bw, f.h - bw, f.radius ?? Math.max(5, s * 0.3));
+    if (f.fill !== null) { ctx.fillStyle = f.fill || tint[0]; ctx.fill(); }
+    ctx.lineWidth = f.hi ? Math.max(4, bw * 2) : bw;
+    ctx.strokeStyle = f.hi ? cAccent : (f.stroke || tint[1]);
     if (f.dashed) ctx.setLineDash([8, 6]);
     ctx.stroke();
     ctx.setLineDash([]);
     const c = f.cells;
     if (c && c.s >= 6) {
-      ctx.lineWidth = 1; ctx.strokeStyle = cLine;
+      ctx.globalAlpha = a * .4;
+      ctx.lineWidth = 1; ctx.strokeStyle = f.stroke || tint[1];
       ctx.beginPath();
-      for (let k = 0; k <= c.c; k++) { ctx.moveTo(c.ox + k * c.s, c.oy); ctx.lineTo(c.ox + k * c.s, c.oy + c.r * c.s); }
-      for (let k = 0; k <= c.r; k++) { ctx.moveTo(c.ox, c.oy + k * c.s); ctx.lineTo(c.ox + c.c * c.s, c.oy + k * c.s); }
+      for (let j = 1; j < c.c; j++) { ctx.moveTo(c.ox + j * c.s, c.oy); ctx.lineTo(c.ox + j * c.s, c.oy + c.r * c.s); }
+      for (let j = 1; j < c.r; j++) { ctx.moveTo(c.ox, c.oy + j * c.s); ctx.lineTo(c.ox + c.c * c.s, c.oy + j * c.s); }
       ctx.stroke();
     }
-  }
+  });
 
   // text
   ctx.textBaseline = "middle";
@@ -605,11 +711,14 @@ function draw(t) {
 
   // items
   const plain = item.dot ? null : spriteImg("");
+  let idx = 0;
   for (const sp of E.sprites) {
+    idx++;
     if (t < sp.born) continue;
     const a = va * (sp.die ? clamp01((sp.die - t) / 300) : 1);
     if (a <= 0) continue;
     const p = posAt(sp, t);
+    if (E.bob && !sp.ghost) p.y += Math.sin(t / 380 + idx * 1.3) * s * 0.05;   // a gentle bob while waiting
     const pp = reduceMotion ? 1 : (t - sp.born) / POP_MS;
     let sc = pp >= 1 ? 1 : 1 + 2.7 * Math.pow(pp - 1, 3) + 1.7 * Math.pow(pp - 1, 2);   // pop with a little bounce
     if (sp.pulseAt && t >= sp.pulseAt && t < sp.pulseAt + 360) sc *= 1 + 0.35 * Math.sin(Math.PI * (t - sp.pulseAt) / 360);
@@ -618,7 +727,7 @@ function draw(t) {
     if (sp.ghost) {
       ctx.setLineDash([Math.max(2, s * .12), Math.max(2, s * .1)]);
       ctx.lineWidth = Math.max(1, s * .06);
-      ctx.strokeStyle = cMuted;
+      ctx.strokeStyle = sp.ghostHi ? cAccent : cMuted;
       rr(p.x + s * .12, p.y + s * .12, s * .76, s * .76, s * .2);
       ctx.stroke();
       ctx.setLineDash([]);
@@ -639,7 +748,17 @@ function draw(t) {
   ctx.globalAlpha = 1;
   for (const q of E.parts) {
     ctx.save(); ctx.translate(q.x, q.y); ctx.rotate(q.r);
-    ctx.fillStyle = q.c; ctx.fillRect(-q.w / 2, -q.w / 4, q.w, q.w / 2);
+    if (q.emoji) {
+      ctx.globalAlpha = clamp01(q.life / 500);
+      ctx.font = `${q.w}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText(q.emoji, 0, 0);
+      ctx.globalAlpha = 1;
+    } else {
+      ctx.fillStyle = q.c;
+      if (q.round) { ctx.beginPath(); ctx.arc(0, 0, q.w / 3, 0, 7); ctx.fill(); }
+      else ctx.fillRect(-q.w / 2, -q.w / 4, q.w, q.w / 2);
+    }
     ctx.restore();
   }
   ctx.globalAlpha = 1;
@@ -652,8 +771,9 @@ function tick(t) {
   if (E.moving) stepMoving(dt);
   if (E.parts.length) stepParts(dt);
   if (E.sprites.some(s => s.die && t >= s.die)) E.sprites = E.sprites.filter(s => !s.die || t < s.die);
+  E.bob = bigItems && !reduceMotion && !E.moving && E.sprites.length > 0 && E.sprites.length <= 300;
   draw(t);
-  const busy = E.moving || E.parts.length || t < E.until || (E.veil && t < E.veil.t0 + 400);
+  const busy = E.bob || E.moving || E.parts.length || t < E.until || (E.veil && t < E.veil.t0 + 400);
   raf = busy ? requestAnimationFrame(tick) : 0;
 }
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", kick);
@@ -772,7 +892,12 @@ function countAloud(n) {
 }
 
 let score = 0;
-function addStar() { score++; $("score").textContent = "⭐ " + score; }
+function addStar() {
+  score++;
+  const el = $("score");
+  el.textContent = "⭐ " + score;
+  el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump");
+}
 let bannerTimer;
 function banner(msg, kind = "good") {
   const b = $("banner");
@@ -781,11 +906,39 @@ function banner(msg, kind = "good") {
   clearTimeout(bannerTimer);
   bannerTimer = setTimeout(() => { b.className = "banner " + kind; }, 2000);
 }
-function celebrate(msg, spoken) { addStar(); banner(msg, "good"); confetti(); say(spoken || msg); }
-function encourage(msg, spoken) { banner(msg, "soft"); say(spoken || msg); }
+function celebrate(msg, spoken) { addStar(); sound("good"); banner(msg, "good"); confetti(); say(spoken || msg); }
+function encourage(msg, spoken) { sound("bad"); banner(msg, "soft"); say(spoken || msg); }
+
+// Little sounds made on the fly: a rising chime for right, a gentle "uh-oh" for not quite.
+let audio = null;
+function tone(freq, t0, dur, type, vol) {
+  const o = audio.createOscillator(), g = audio.createGain();
+  o.type = type; o.frequency.value = freq;
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(vol, t0 + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.connect(g).connect(audio.destination);
+  o.start(t0); o.stop(t0 + dur + 0.05);
+}
+function sound(kind) {
+  if (!$("sounds").checked) return;
+  try {
+    audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+    if (audio.state === "suspended") audio.resume();
+    const t = audio.currentTime + 0.02;
+    if (kind === "good") {
+      [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone(f, t + i * 0.09, 0.32, "triangle", 0.22));
+      tone(1318.5, t + 0.36, 0.55, "sine", 0.14);
+      tone(1567.98, t + 0.42, 0.5, "sine", 0.1);
+    } else {
+      tone(392, t, 0.3, "sine", 0.25);
+      tone(311.13, t + 0.24, 0.5, "sine", 0.25);
+    }
+  } catch (e) { /* no sound available */ }
+}
 
 const padEl = $("pad");
-let padVal = "", padFn = null;
+let padVal = "", padFn = null, padChange = null, padEmptyOk = false;
 padEl.innerHTML = '<div class="shown" id="padShown">?</div>' +
   [1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map(d => `<button data-d="${d}">${d}</button>`).join("") +
   '<button data-d="back" aria-label="Delete">⌫</button><button class="ok" data-d="ok" aria-label="Check">✓</button>';
@@ -793,14 +946,19 @@ padEl.addEventListener("click", e => { const b = e.target.closest("button"); if 
 function padKey(d) {
   if (!padFn) return;
   if (d === "back") padVal = padVal.slice(0, -1);
-  else if (d === "ok") { if (padVal !== "") padFn(+padVal); return; }
+  else if (d === "ok") { if (padVal !== "") padFn(+padVal); else if (padEmptyOk) padFn(null); return; }
   else if (padVal.length < 4) padVal = (padVal === "0" ? "" : padVal) + d;
   $("padShown").textContent = padVal || "?";
+  if (padChange) padChange(padVal);
 }
 function padShow(on) { padEl.hidden = !on; }            // shown for the whole activity, so the board size stays put
-function padOn(fn) { padFn = fn; padVal = ""; $("padShown").textContent = "?"; padEl.classList.remove("off"); }
+function padOn(fn, onChange = null, emptyOk = false) {
+  padFn = fn; padChange = onChange; padEmptyOk = emptyOk;
+  padVal = ""; $("padShown").textContent = "?";
+  padEl.classList.remove("off");
+}
 function padOff() { padFn = null; padEl.classList.add("off"); }
-function padClear() { padVal = ""; $("padShown").textContent = "?"; }
+function padClear() { padVal = ""; $("padShown").textContent = "?"; if (padChange) padChange(""); }
 document.addEventListener("keydown", e => {
   if (padEl.hidden || !padFn) return;
   const a = document.activeElement;
@@ -1039,22 +1197,29 @@ ACTS.eq = {
   vals: { "+": [3, 4], "−": [7, 3], "×": [3, 4], "÷": [12, 3] },
   limits: { "+": [[0, 20], [0, 20]], "−": [[0, 20], [0, 20]], "×": [[1, 10], [1, 10]], "÷": [[0, 100], [1, 10]] },
   LB: 48,   // room for text under the items
+  usesPad: true,
   start() {
     choice("Operation", [["+", "+ Add"], ["−", "− Take away"], ["×", "× Times"], ["÷", "÷ Share"]], this.op, v => { this.op = v; this.reset(); }, 2);
     const s = side("");
     sideButton(s, "🎲 New numbers", () => this.random());
     this.flipBtn = sideButton(s, "🔄 Flip it around", () => this.flip());
-    s.insertAdjacentHTML("beforeend", '<p class="hint">Change the numbers with ▲ ▼, or tap the board to add more. Then press =</p>');
+    s.insertAdjacentHTML("beforeend", '<p class="hint">Set the numbers with ▲ ▼ (or tap the board). Type your answer with the number pad, then press =</p>');
     this.reset();
   },
   get a() { return this.vals[this.op][0]; },
   get b() { return this.vals[this.op][1]; },
   reset() {
     clearBoard();
-    this.solved = false; this.flipped = false;
+    this.solved = false; this.flipped = false; this.reviewed = false;
+    this.guess = null; this.ghosts = [];
     this.A = []; this.B = [];
     this.renderEq();
+    this.listen();
     this.sync(true);
+  },
+  // The number pad types into the answer box; ✓ works like =.
+  listen() {
+    padOn(g => this.solve(g), v => { const r = $("eqR"); if (r) r.textContent = v || "?"; }, true);
   },
   random() {
     const v = this.vals;
@@ -1071,10 +1236,10 @@ ACTS.eq = {
         <input class="tile ${cls}" id="eq${k}" type="number" inputmode="numeric" value="${this.vals[this.op][k]}" aria-label="Number ${k + 1}">
         <button class="arrow" data-k="${k}" data-d="-1" aria-label="Less">▼</button></div>`;
     setPrompt(`<div class="eq">${num(0, this.op === "+" || this.op === "−" ? "a" : "")}<span class="opsign">${sign}</span>${num(1, this.op === "+" ? "b" : "")}
-      <button class="equals" id="eqGo" aria-label="Equals">=</button><div class="tile res" id="eqR">?</div></div>`);
+      <button class="equals" id="eqGo" aria-label="Equals, check my answer">=</button><div class="tile res" id="eqR" aria-label="Your answer">?</div></div>`);
     document.querySelectorAll(".eq .arrow").forEach(b => b.onclick = () => this.change(+b.dataset.k, this.vals[this.op][+b.dataset.k] + +b.dataset.d));
     [0, 1].forEach(k => $("eq" + k).addEventListener("input", e => { const v = parseInt(e.target.value, 10); if (!isNaN(v)) this.change(k, v, true); }));
-    $("eqGo").onclick = () => this.solve();
+    $("eqGo").onclick = () => this.solve(padVal === "" ? null : +padVal);
     this.flipBtn.hidden = true;
   },
   change(k, v, typing) {
@@ -1085,7 +1250,13 @@ ACTS.eq = {
     vals[k] = v;
     if (this.op === "−" && vals[1] > vals[0]) vals[1] = vals[0];
     [0, 1].forEach(i => { const el = $("eq" + i); if (!(typing && i === k && document.activeElement === el)) el.value = vals[i]; });
-    if (this.solved) { clearBoard(); this.solved = false; this.flipped = false; this.A = []; this.B = []; $("eqR").innerHTML = "?"; this.flipBtn.hidden = true; }
+    if (this.solved) {   // changing the numbers starts a fresh problem
+      clearBoard();
+      this.solved = false; this.flipped = false; this.reviewed = false; this.guess = null; this.ghosts = [];
+      this.A = []; this.B = [];
+      this.renderEq();
+      this.listen();
+    }
     this.sync(true);
   },
   // Make sure we have the right number of items, then lay them out.
@@ -1184,12 +1355,43 @@ ACTS.eq = {
     }
     else this.change(0, this.a + 1);
   },
-  solve() {
+  // The correct answer (for ÷, how many in each group).
+  answer() {
+    const { a, b } = this;
+    return this.op === "+" ? a + b : this.op === "−" ? a - b : this.op === "×" ? a * b : Math.floor(a / b);
+  },
+  eqText() {
+    const { a, b } = this, n = this.answer(), rem = this.op === "÷" ? a % b : 0;
+    return `${a} ${this.op} ${b} = ${n}${rem ? `, ${rem} left over` : ""}`;
+  },
+  spoken() {
+    const { a, b } = this, n = this.answer(), rem = this.op === "÷" ? a % b : 0;
+    const word = { "+": "plus", "−": "take away", "×": "times", "÷": "shared into" }[this.op];
+    return `${a} ${word} ${b}${this.op === "÷" ? " groups" : ""} is ${n}${this.op === "÷" ? " each" : ""}${rem ? `, with ${rem} left over` : ""}`;
+  },
+  // Press = : check her answer, play a sound, then show it happening on the board.
+  solve(g) {
     if (this.solved) return;
+    if (g === null || g === undefined || isNaN(g)) {
+      banner("Type your answer first, then press =", "soft");
+      say("Type your answer first, then press equals.");
+      return;
+    }
     this.solved = true;
+    this.guess = g;
+    this.right = g === this.answer();
+    padOff();
     const res = $("eqR");
-    res.textContent = "";
-    this.layoutSolved(true, res);
+    res.textContent = g;
+    res.classList.add(this.right ? "right" : "wrong");
+    if (this.right) {
+      celebrate(pick(["Yes! You got it! 🎉", "Amazing! 🌟", "You're a math star! ⭐", "Hooray! That's right! 🎉"]), `Yes! ${this.spoken()}!`);
+    } else {
+      sound("bad");
+      banner("Not quite. Let's see why! 👀", "soft");
+      say("Not quite. Let's see why.");
+    }
+    this.layoutSolved(true, true);
   },
   flip() {
     if (!this.solved || this.op !== "×") return;
@@ -1197,101 +1399,153 @@ ACTS.eq = {
     this.vals["×"] = [v[1], v[0]];
     this.flipped = !this.flipped;
     $("eq0").value = this.a; $("eq1").value = this.b;
-    E.labels = [];
+    removeSprites(this.ghosts); this.ghosts = [];
+    this.A.forEach(sp => { sp.hi = false; });
+    this.reviewed = false;
     E.timers.forEach(clearTimeout); E.timers = [];
-    $("eqR").textContent = "";
-    this.layoutSolved(true, $("eqR"));
+    this.layoutSolved(true, false);
   },
-  layoutSolved(anim, res) {
-    const r = board(), LB = this.LB, { a, b } = this;
+  // Lay out the answer. With anim, act it out and count; with review, explain at the end.
+  layoutSolved(anim, review) {
+    const r = board(), LB = this.LB, { a, b } = this, n = this.answer(), g = this.guess;
     const body = shrink(r, { bottom: LB });
     const textY = r.y + r.h - LB / 2;
-    const finish = (text, spoken) => {
-      label({ x: r.x + r.w / 2, y: textY, text, size: 30, delay: anim ? 0 : undefined });
-      if (anim) { banner(text, "good"); say(spoken); }
+    const wrong = !this.right && !this.flipped;
+    this.ghostSpots = []; this.missed = [];
+    let counter = null;
+    if (anim) { counter = { x: r.x + r.w / 2, y: textY, text: "", size: 30, born: 0 }; }
+    const tick = k => { counter.text = String(k); kick(); };
+    const finish = () => {
+      E.labels = E.labels.filter(l => l !== counter);
+      label({ x: r.x + r.w / 2, y: textY, text: this.eqText(), size: 30, delay: anim ? 0 : undefined });
+      // Put the dotted "extra" boxes back in place after a resize.
+      this.ghosts.forEach((sp, k) => { const p = this.ghostSpots[k]; if (p) moveTo(sp, p.x, p.y, 0, 0); });
+      if (anim && review) this.review();
     };
-    const show = v => { if (res) res.innerHTML = v; };
+    const extraFor = cap => (wrong && g > n ? Math.min(g - n, cap) : 0);
 
     if (this.op === "+") {
-      const all = this.A.concat(this.B), n = all.length;
-      const s = fitGroups(body, n, 10);
+      const all = this.A.concat(this.B), extra = extraFor(40), slots = n + extra;
+      const s = fitGroups(body, slots, 10);
       E.S = s; E.frames = []; E.labels = [];
-      const G = groupLayout(body, n, 10, s);
+      const G = groupLayout(body, slots, 10, s);
       G.boxes.forEach(f => frame(anim ? { ...f, delay: 200 } : f));
       all.forEach((sp, i) => { const p = G.spot(i); moveTo(sp, p.x, p.y, anim ? i * 20 : 0, anim ? MOVE_MS : 0); });
-      const text = `${a} + ${b} = ${n}`, spoken = `${a} plus ${b} equals ${n}`;
-      if (!anim) { finish(text); show(n); return; }
-      countUp(all, { delay: MOVE_MS + n * 20 + 100, onTick: k => show(k), done: () => finish(text, spoken) });
+      this.ghostSpots = Array.from({ length: extra }, (_, k) => G.spot(n + k));
+      if (wrong && g < n) this.missed = all.slice(Math.max(0, g));
+      if (!anim) return finish();
+      E.labels.push(counter);
+      countUp(all, { delay: MOVE_MS + all.length * 20 + 100, onTick: tick, done: finish });
     }
 
     else if (this.op === "−") {
-      const keep = this.A.slice(0, a - b), go = this.A.slice(a - b), n = keep.length;
-      const text = `${a} − ${b} = ${n}`, spoken = `${a} take away ${b} equals ${n}`;
-      E.labels = [];
-      if (!anim) {
-        removeSprites(go); this.A = keep;
-        const s = fitGroups(body, a, 10); E.S = s; E.frames = [];
-        const G = groupLayout(body, a, 10, s);
-        G.boxes.forEach(f => frame(f));
-        keep.forEach((sp, i) => { const p = G.spot(i); moveTo(sp, p.x, p.y, 0, 0); });
-        finish(text); show(n); return;
-      }
-      go.slice().reverse().forEach((sp, i) => { const p = posAt(sp, now()); leave(sp, E.W + E.S * 2, p.y, i * 160, 1000); });
+      const keep = this.A.slice(0, a - b), go = this.A.slice(a - b);
+      const extra = extraFor(40), total = Math.max(a, n + extra);
+      const s = fitGroups(body, total, 10);
+      E.S = s; E.frames = []; E.labels = [];
+      const G = groupLayout(body, total, 10, s);
+      G.boxes.forEach(f => frame(f));
+      keep.forEach((sp, i) => { const p = G.spot(i); moveTo(sp, p.x, p.y, 0, anim ? 400 : 0); });
+      this.ghostSpots = Array.from({ length: extra }, (_, k) => G.spot(n + k));
+      if (wrong && g < n) this.missed = keep.slice(Math.max(0, g));
       this.A = keep;
-      countUp(keep, { delay: go.length * 160 + 1100, onTick: k => show(k), done: () => { show(n); finish(text, spoken); } });
-      if (!keep.length) later(() => show(0), go.length * 160 + 1100);
+      if (!anim) { removeSprites(go); return finish(); }
+      go.slice().reverse().forEach((sp, i) => { const p = posAt(sp, now()); leave(sp, E.W + E.S * 2, p.y, 400 + i * 160, 1000); });
+      E.labels.push(counter);
+      const t = 400 + go.length * 160 + 1100;
+      if (!keep.length) later(() => tick(0), t);
+      countUp(keep, { delay: t, onTick: tick, done: finish });
     }
 
     else if (this.op === "×") {
-      const n = a * b, LW = 64;
+      const LW = 64, extra = extraFor(2 * b), rows = a + Math.ceil(extra / b);
       const area = shrink(body, { right: LW });
-      const s = fitGrid(area, a, b);
+      const s = fitGrid(area, rows, b);
       E.S = s; E.frames = []; E.labels = [];
-      const spot = gridSpots(area, a, b, s);
+      const spot = gridSpots(area, rows, b, s);
       const rowOf = sp => (this.flipped ? sp.j : sp.g), colOf = sp => (this.flipped ? sp.g : sp.j);
       this.A.forEach((sp, i) => { const p = spot(rowOf(sp), colOf(sp)); moveTo(sp, p.x, p.y, anim ? i * 10 : 0, anim ? MOVE_MS : 0); });
+      this.ghostSpots = Array.from({ length: extra }, (_, k) => spot(a + Math.floor(k / b), k % b));
+      if (wrong && g < n) {
+        const order = this.A.slice().sort((p, q) => rowOf(p) - rowOf(q) || colOf(p) - colOf(q));
+        this.missed = order.slice(Math.max(0, g));
+      }
       const rowLabel = (row, delay) => {
         const p = spot(row, b - 1);
         label({ x: p.x + s + 30, y: p.y + s / 2, text: String((row + 1) * b), size: Math.max(14, Math.min(26, s * .7)), color: css("--accent"), delay });
       };
-      const text = `${a} × ${b} = ${n}`, spoken = `${a} times ${b} equals ${n}`;
-      if (!anim) { for (let row = 0; row < a; row++) rowLabel(row); finish(text); show(n); this.flipBtn.hidden = false; return; }
-      const start = MOVE_MS + n * 10 + 150, st = Math.min(800, 3200 / a);
+      if (!anim) { for (let row = 0; row < a; row++) rowLabel(row); this.flipBtn.hidden = false; return finish(); }
+      E.labels.push(counter);
+      const start = MOVE_MS + a * b * 10 + 150, st = Math.min(800, 3200 / a);
       for (let row = 0; row < a; row++) {
         later(() => {
           this.A.filter(sp => rowOf(sp) === row).forEach((sp, i) => pulse(sp, i * 25));
           rowLabel(row, 0);
-          show((row + 1) * b);
+          tick((row + 1) * b);
           say(String((row + 1) * b), true);
         }, start + row * st);
       }
-      later(() => { finish(text, spoken); this.flipBtn.hidden = false; }, start + a * st + 300);
+      later(() => { finish(); this.flipBtn.hidden = false; }, start + a * st + 300);
     }
 
     else {
       const { GT, GB, s, q, cap, rem } = this.divLayout();
       E.S = s; E.frames = []; E.labels = [];
-      GB.boxes.forEach(f => frame(f));
+      GB.boxes.forEach(f => frame({ ...f, hi: this.reviewed && wrong }));
       const dealt = this.A.slice(0, b * q), left = this.A.slice(b * q);
       const st = Math.min(350, 3500 / Math.max(1, dealt.length));
       dealt.forEach((sp, k) => {
         const p = GB.spot((k % b) * cap + Math.floor(k / b));
         moveTo(sp, p.x, p.y, anim ? k * st : 0, anim ? 450 : 0);
       });
-      const end = anim ? dealt.length * st + 500 : 0;
-      const GL = groupLayout({ ...GT.boxes[0], x: board().x, w: board().w, y: GT.top, h: GB.top - GT.top - 12 }, rem, 10, s);
+      const GL = groupLayout({ x: r.x, w: r.w, y: GT.top, h: Math.max(20, GB.top - GT.top - 12) }, rem, 10, s);
       const wrapUp = () => {
         GB.boxes.forEach(f => label({ x: f.x + f.w / 2, y: f.y + f.h + 14, text: String(q), size: Math.max(14, Math.min(24, s * .6)), color: css("--accent"), delay: anim ? 0 : undefined }));
         left.forEach((sp, i) => { const p = GL.spot(i); sp.hi = true; moveTo(sp, p.x, p.y, 0, anim ? 400 : 0); if (anim) pulse(sp, 450); });
-        if (rem) label({ x: board().x + board().w / 2, y: GL.bottom + 16, text: `${rem} left over`, size: 20, color: css("--muted"), delay: anim ? 0 : undefined });
-        show(`${q}${rem ? `<small>${rem} left over</small>` : ""}`);
-        finish(`${a} ÷ ${b} = ${q}${rem ? `, ${rem} left over` : ""}`,
-          `${a} shared into ${b} groups is ${q} each${rem ? `, with ${rem} left over` : ""}`);
+        if (rem) label({ x: r.x + r.w / 2, y: GL.bottom + 16, text: `${rem} left over`, size: 20, color: css("--muted"), delay: anim ? 0 : undefined });
+        if (anim) tick(q);
+        finish();
       };
-      if (anim) later(wrapUp, end); else wrapUp();
+      if (anim) { E.labels.push(counter); later(wrapUp, dealt.length * st + 500); } else wrapUp();
     }
   },
-  layout() { if (this.solved) this.layoutSolved(false, $("eqR")); else this.layoutPre(false); },
+  // After the animation: celebrate, or show and explain what went wrong.
+  review() {
+    this.reviewed = true;
+    const { a, b } = this, n = this.answer(), g = this.guess, op = this.op;
+    const out = $("prompt");
+    if (this.right) {
+      out.insertAdjacentHTML("beforeend", `<div class="row"><span class="seq">✅ ${this.eqText()}</span></div>`);
+      promptButtons([["New problem ▶", () => this.random(), "go"]]);
+      return;
+    }
+    // Show it: dotted boxes for extra ones she counted, yellow rings on the ones she missed.
+    this.ghosts = this.ghostSpots.map((p, k) => sprite(p.x, p.y, { delay: k * 70, ghost: true, ghostHi: true }));
+    this.missed.forEach((sp, i) => { sp.hi = true; pulse(sp, i * 90); });
+    if (op === "÷") {
+      E.frames.forEach(f => { f.hi = true; });
+      // bounce the items in the first group, one by one, to count them
+      this.A.filter((sp, k) => k < b * n && k % b === 0).forEach((sp, i) => pulse(sp, i * 250));
+      kick();
+    }
+    const diff = g - n, rem = a % b;
+    const off = diff > 0 ? `${g} is ${diff} too many.` : `${g} is ${-diff} too few.`;
+    const why = {
+      "+": `When we put ${a} and ${b} together and count them all, we get ${n}.`,
+      "−": `We started with ${a}. ${b} went away, so ${n} ${n === 1 ? "is" : "are"} left.`,
+      "×": `${a} group${a === 1 ? "" : "s"} of ${b} make${a === 1 ? "s" : ""} ${n}${a > 1 && a <= 10 ? `: ${Array.from({ length: a }, (_, i) => (i + 1) * b).join(", ")}` : ""}.`,
+      "÷": `Sharing ${a} into ${b} groups puts ${n} in each group${rem ? `, with ${rem} left over` : ""}.`,
+    }[op];
+    const look = this.ghosts.length ? " The dotted boxes show the extra ones."
+      : this.missed.length ? " The ones with yellow rings are the ones you missed." : "";
+    const cheer = pick(["Good try! Mistakes help your brain grow 🌱", "You're getting closer! Keep going 💪", "Nice thinking! Have another go ⭐", "Great effort! You can do it 🌈"]);
+    out.insertAdjacentHTML("beforeend",
+      `<div class="row explain">You said <b>${g}</b>, but ${this.eqText()}. ${why} ${off}${look}</div>
+       <div class="row cheer">${cheer}</div>`);
+    promptButtons([["↺ Try again", () => this.reset()], ["New problem ▶", () => this.random(), "go"]]);
+    say(`You said ${g}. ${why} ${off} ${plainText(cheer)}`);
+  },
+  layout() { if (this.solved) this.layoutSolved(false, false); else this.layoutPre(false); },
 };
 
 /* ---------------- 3. Guess how many ---------------- */
@@ -1846,6 +2100,7 @@ function openActivity(id) {
   setPrompt("");
   padOff();
   padShow(!!act.usesPad);
+  padEl.classList.toggle("bare", id === "eq");   // equations show the answer in the = box instead
   $("home").hidden = true;
   resizeCanvas();
   act.start();
@@ -1896,6 +2151,22 @@ canvas.addEventListener("click", e => {
 });
 
 new ResizeObserver(() => { if (resizeCanvas() && act && act.layout) { act.layout(false); kick(); } }).observe(wrap);
+
+// Decorations: floating bubbles and a rainbow title.
+document.querySelectorAll(".sky").forEach(sky => {
+  for (let i = 0; i < 14; i++) {
+    const b = document.createElement("span");
+    const size = 30 + Math.random() * 90;
+    b.style.cssText = `left:${Math.random() * 100}%;width:${size}px;height:${size}px;background:${pick(CONFETTI)};` +
+      `animation-duration:${14 + Math.random() * 16}s;animation-delay:${-Math.random() * 30}s`;
+    sky.appendChild(b);
+  }
+});
+const RAINBOW = ["#ff4f8b", "#ff8a3d", "#f5b400", "#20c997", "#2fb8ff", "#7c4dff", "#d84dff"];
+$("homeTitle").innerHTML = [..."Count With Me"].map((ch, i) =>
+  ch === " " ? "&nbsp;" : `<span style="color:${RAINBOW[i % RAINBOW.length]};animation-delay:${i * .12}s">${ch}</span>`).join("");
+document.querySelectorAll(".card").forEach((c, i) => { c.style.animationDelay = `${i * 60}ms`; });
+if (document.fonts) document.fonts.ready.then(kick);
 
 openActivity("count");
 $("home").hidden = false;
