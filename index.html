@@ -322,41 +322,77 @@
   }
 
   /* Phones */
-  @media (max-width: 600px) {
-    aside { width: 132px; padding: 10px 8px 14px; gap: 12px; }
-    #actControls { gap: 12px; }
-    .home-btn { font-size: 13px; height: 38px; }
-    #actTitle { font-size: 17px; }
-    h2 { font-size: 11px; }
-    .numbox { font-size: 26px; border-radius: 14px; padding: 4px 2px; border-width: 3px; }
-    .step { width: 46px; height: 46px; font-size: 26px; }
-    .steps { gap: 8px; }
-    .chips { grid-template-columns: repeat(2, 1fr); gap: 6px; }
-    .chip { height: 48px; font-size: 26px; }
-    .groups { grid-template-columns: repeat(2, 1fr) !important; gap: 6px; }
-    .grp { min-height: 42px; font-size: 16px; }
-    .grp.mix, .grp.wide, .groups.list .grp { font-size: 14px; }
-    .groups.list .grp { padding-left: 6px; }
-    .toggle { font-size: 14px; }
-    .hint { font-size: 12px; }
+  /* Top bar and pinned controls only show on phones */
+  .mbar, #mpin, .drawer-close, .scrim { display: none; }
+
+  /* Phones and small tablets: settings live in a slide-out panel; the problem gets the whole screen */
+  @media (max-width: 700px) {
+    aside {
+      position: fixed; top: 0; left: 0; bottom: 0;
+      width: min(310px, 86vw);
+      transform: translateX(-105%);
+      transition: transform .3s cubic-bezier(.3,1.2,.5,1);
+      z-index: 30;
+      padding-top: max(14px, env(safe-area-inset-top));
+    }
+    body.drawer-open aside { transform: none; }
+    .drawer-close {
+      display: block; height: 44px; border: none; border-radius: 999px;
+      background: var(--sun); color: #3b2466; font-size: 18px; font-weight: 700; cursor: pointer;
+      box-shadow: 0 4px 0 #d99a00;
+    }
+    body.drawer-open .scrim { display: block; position: fixed; inset: 0; background: rgba(30, 10, 60, .45); z-index: 25; }
+
+    .mbar {
+      display: flex; align-items: center; gap: 8px; flex: none;
+      padding: max(8px, env(safe-area-inset-top)) 10px 8px;
+      background: linear-gradient(90deg, var(--side1), var(--side2));
+      color: #fff; box-shadow: 0 4px 14px rgba(80,30,140,.25);
+      position: relative; z-index: 2;
+    }
+    .mbar button {
+      height: 40px; border: none; border-radius: 999px; cursor: pointer;
+      background: #fff; color: var(--purple); font-weight: 700; font-size: 16px;
+      box-shadow: 0 3px 0 rgba(0,0,0,.18);
+    }
+    .mb-home { width: 44px; font-size: 20px !important; }
+    .mb-title { flex: 1; min-width: 0; text-align: center; font-size: 20px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 2px 0 rgba(0,0,0,.15); }
+    .mb-opts { width: 44px; font-size: 22px !important; }
+    .mb-title { text-align: left; font-size: 19px; }
+    .mb-score { font-size: 16px; padding: 6px 12px; }
+    .top .score { display: none; }
+
+    #mpin:not(:empty) { display: flex; justify-content: center; padding: 8px 10px 0; position: relative; z-index: 1; }
+    #mpin section { display: flex; align-items: center; gap: 10px; }
+    #mpin h2 { display: none; }
+    #mpin .numbox { width: 140px; font-size: 32px; padding: 2px 4px; }
+    #mpin .steps { margin: 0; }
+    #mpin .step { width: 50px; height: 50px; font-size: 28px; }
+
     .top { padding: 8px 8px 2px; gap: 6px; }
-    .prompt { font-size: 17px; gap: 6px 8px; }
-    .prompt .explain { font-size: 14px; padding: 6px 10px; }
-    .prompt .cheer { font-size: 16px; }
-    .score { font-size: 14px; padding: 4px 8px; }
-    .pbtn { min-height: 42px; padding: 0 14px; font-size: 16px; }
-    .tile { min-width: 44px; height: 44px; font-size: 22px; border-radius: 12px; border-width: 3px; padding: 0 4px; }
-    input.tile { width: 44px; }
-    .arrow { width: 44px; height: 26px; font-size: 12px; }
-    .opsign { font-size: 22px; }
-    .equals { width: 40px; height: 40px; font-size: 26px; }
-    .eq { gap: 4px; }
-    .pad { gap: 6px; padding: 8px 6px 10px; }
-    .pad .shown { min-width: 80px; height: 46px; font-size: 26px; }
-    .pad button { width: 44px; height: 46px; font-size: 22px; }
-    .pad .ok { width: 60px; }
-    .banner { font-size: 22px; padding: 10px 16px; }
-    .home h1 { font-size: 34px; }
+    .prompt { font-size: 18px; gap: 6px 8px; }
+    .prompt .explain { font-size: 15px; padding: 6px 10px; }
+    .prompt .cheer { font-size: 17px; }
+    .score { font-size: 15px; padding: 4px 10px; }
+    .pbtn { min-height: 44px; padding: 0 16px; font-size: 17px; }
+    .tile { min-width: 56px; height: 56px; font-size: 30px; border-radius: 16px; border-width: 3px; padding: 0 4px; }
+    input.tile { width: 56px; }
+    .arrow { width: 56px; height: 28px; font-size: 13px; }
+    .opsign { font-size: 28px; }
+    .equals { width: 52px; height: 52px; font-size: 32px; }
+    .eq { gap: 6px; flex-wrap: nowrap; }
+
+    /* number pad: two tidy rows (1-5 ⌫ / 6-0 ✓) */
+    .pad { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; padding: 8px 8px max(10px, env(safe-area-inset-bottom)); }
+    .pad .shown { grid-column: 1 / -1; order: 0; min-width: 0; height: 42px; font-size: 26px; }
+    .pad button { width: auto; height: 50px; font-size: 24px; }
+    .pad button[data-d="1"], .pad button[data-d="2"], .pad button[data-d="3"], .pad button[data-d="4"], .pad button[data-d="5"] { order: 1; }
+    .pad button[data-d="back"] { order: 2; }
+    .pad button[data-d="6"], .pad button[data-d="7"], .pad button[data-d="8"], .pad button[data-d="9"], .pad button[data-d="0"] { order: 3; }
+    .pad .ok { order: 4; width: auto; }
+
+    .banner { font-size: 22px; padding: 10px 18px; }
+    .home h1 { font-size: 36px; }
     .home p.sub { font-size: 17px; }
     .cards { grid-template-columns: repeat(2, 1fr); gap: 10px; }
     .card { padding: 12px; border-radius: 20px; }
@@ -364,10 +400,17 @@
     .card .t { font-size: 17px; }
     .card .d { font-size: 13px; }
   }
+  @media (max-width: 380px) {
+    .tile { min-width: 48px; height: 50px; font-size: 26px; }
+    input.tile { width: 48px; }
+    .arrow { width: 48px; }
+    .equals { width: 46px; height: 46px; }
+  }
 </style>
 </head>
 <body>
-<aside>
+<aside id="side">
+  <button class="drawer-close" id="drawerClose">✕ Done</button>
   <button class="home-btn" id="homeBtn">🏠 All activities</button>
   <h1 id="actTitle">Count</h1>
   <div id="actControls"></div>
@@ -381,6 +424,13 @@
   </div>
 </aside>
 <main>
+  <div class="mbar">
+    <button class="mb-home" id="mHome" aria-label="All activities">🏠</button>
+    <div class="mb-title" id="mTitle"></div>
+    <div class="score mb-score" id="mScore" title="Stars earned">⭐ 0</div>
+    <button class="mb-opts" id="mOpts" aria-label="Options">⚙️</button>
+  </div>
+  <div id="mpin"></div>
   <div class="top">
     <div class="prompt" id="prompt" aria-live="polite"></div>
     <div class="score" id="score" title="Stars earned">⭐ 0</div>
@@ -392,6 +442,7 @@
   </div>
   <div class="pad" id="pad" hidden></div>
 </main>
+<div class="scrim" id="scrim"></div>
 <div class="home" id="home">
   <div class="sky" aria-hidden="true"></div>
   <h1 id="homeTitle">Count With Me</h1>
@@ -915,9 +966,10 @@ function countAloud(n) {
 let score = 0;
 function addStar() {
   score++;
-  const el = $("score");
-  el.textContent = "⭐ " + score;
-  el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump");
+  for (const el of [$("score"), $("mScore")]) {
+    el.textContent = "⭐ " + score;
+    el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump");
+  }
 }
 let bannerTimer;
 function banner(msg, kind = "good") {
@@ -992,8 +1044,9 @@ document.addEventListener("keydown", e => {
 /* =====================================================================
    Sidebar and prompt helpers
    ===================================================================== */
-function side(title) {
+function side(title, { pin = false } = {}) {
   const s = document.createElement("section");
+  if (pin) s.classList.add("pin");   // on phones, pinned controls sit above the board instead of in the panel
   if (title) { const h = document.createElement("h2"); h.textContent = title; s.appendChild(h); }
   $("actControls").appendChild(s);
   return s;
@@ -1050,7 +1103,7 @@ ACTS.count = {
   icon: "🔢", title: "Count", desc: "Type a number and fill the board.",
   n: 7, mode: 0,
   start() {
-    const s1 = side("Number");
+    const s1 = side("Number", { pin: true });
     s1.insertAdjacentHTML("beforeend",
       `<input id="num" class="numbox" type="number" inputmode="numeric" min="0" max="10000" value="${this.n}" aria-label="Number">
        <div class="steps"><button class="step" id="minus" aria-label="One less">−</button><button class="step" id="plus" aria-label="One more">+</button></div>`);
@@ -1208,7 +1261,7 @@ ACTS.count = {
     this.status();
     kick();
   },
-  itemChanged() { this.status(); this.numEl.focus(); this.numEl.select(); },
+  itemChanged() { this.status(); closeDrawer(); this.numEl.focus(); this.numEl.select(); },
 };
 
 /* ---------------- 2. Equations ---------------- */
@@ -2165,15 +2218,36 @@ function openActivity(id) {
   bigItems = id !== "count";
   imgCache.clear();
   $("actTitle").textContent = act.icon + " " + act.title;
+  $("mTitle").textContent = act.icon + " " + act.title;
+  $("mpin").innerHTML = "";
+  closeDrawer();
   $("actControls").innerHTML = "";
   setPrompt("");
   padOff();
   padShow(!!act.usesPad);
   padEl.classList.toggle("bare", id === "eq");   // equations show the answer in the = box instead
   $("home").hidden = true;
+  placePins();
   resizeCanvas();
   act.start();
+  placePins();   // move this activity's pinned controls (Count's number box) above the board on phones
+  if (resizeCanvas() && act.layout) act.layout(false);
 }
+
+// Phones: the settings panel slides in from the side; pinned controls move above the board.
+const phoneMQ = matchMedia("(max-width: 700px)");
+function openDrawer() { document.body.classList.add("drawer-open"); }
+function closeDrawer() { document.body.classList.remove("drawer-open"); }
+function placePins() {
+  const pins = [...document.querySelectorAll("section.pin")];
+  if (phoneMQ.matches) pins.forEach(p => $("mpin").appendChild(p));
+  else pins.reverse().forEach(p => $("actControls").prepend(p));
+}
+phoneMQ.addEventListener("change", placePins);
+$("mOpts").onclick = openDrawer;
+$("drawerClose").onclick = closeDrawer;
+$("scrim").onclick = closeDrawer;
+$("mHome").onclick = () => { closeDrawer(); $("home").hidden = false; stopSpeaking(); };
 
 // Home screen
 for (const [id, a] of Object.entries(ACTS)) {
